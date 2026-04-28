@@ -3,6 +3,8 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Favorite;
+use App\Models\Book;
+use App\Models\DigitalNote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,25 +12,33 @@ class FavoriteController extends Controller
 {
     public function index()
     {
-        $favorites = Auth::user()->favorites()->with(['book', 'digitalNote'])->get();
+        $favorites = Auth::user()->favorites()->with('favoritable')->get();
         return view('student.favorites.index', compact('favorites'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'book_id' => 'nullable|exists:books,id',
-            'note_id' => 'nullable|exists:digital_notes,id',
+            'favoritable_id' => 'required|integer',
+            'favoritable_type' => 'required|in:book,note',
         ]);
+
+        // تحديد نوع الـ Model
+        $type = $request->favoritable_type === 'book'
+            ? Book::class
+            : DigitalNote::class;
 
         // التحقق من عدم إضافة نفس العنصر مرتين
         $exists = Auth::user()->favorites()
-            ->where('book_id', $request->book_id)
-            ->where('note_id', $request->note_id)
+            ->where('favoritable_id', $request->favoritable_id)
+            ->where('favoritable_type', $type)
             ->exists();
 
         if (!$exists) {
-            Auth::user()->favorites()->create($request->all());
+            Auth::user()->favorites()->create([
+                'favoritable_id' => $request->favoritable_id,
+                'favoritable_type' => $type,
+            ]);
         }
 
         return back()->with('success', 'تمت الإضافة للمفضلة.');

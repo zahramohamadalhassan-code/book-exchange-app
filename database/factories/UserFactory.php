@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -12,34 +13,40 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $password;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'role_id' => Role::where('name', 'Student')->first()?->id ?? 2,
+            'university_id' => 'STU-' . fake()->unique()->numerify('#####'),
+            'full_name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'phone_number' => fake()->numerify('09########'),
+            'is_banned' => false,
             'remember_token' => Str::random(10),
         ];
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * حالة المستخدم المحظور
      */
-    public function unverified(): static
+    public function banned(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
+        return $this->state(fn(array $attributes) => [
+            'is_banned' => true,
+        ]);
+    }
+
+    /**
+     * حالة المدير
+     */
+    public function admin(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role_id' => Role::where('name', 'Admin')->first()?->id ?? 1,
         ]);
     }
 }
