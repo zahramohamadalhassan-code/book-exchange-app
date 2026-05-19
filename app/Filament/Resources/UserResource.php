@@ -20,49 +20,62 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationGroup = 'إدارة المستخدمين';
+    public static function getNavigationGroup(): string
+    {
+        return __('admin.user_management');
+    }
 
     protected static ?int $navigationSort = 1;
+
+    public static function getModelLabel(): string
+    {
+        return __('admin.user.model_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('admin.user.model_label_plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('بيانات المستخدم')
+                Forms\Components\Section::make(__('admin.user.section_data'))
                     ->schema([
                         Forms\Components\TextInput::make('full_name')
-                            ->label('الاسم الكامل')
+                            ->label(__('admin.user.full_name'))
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('email')
-                            ->label('البريد الإلكتروني')
+                            ->label(__('admin.user.email'))
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
                         Forms\Components\TextInput::make('password')
-                            ->label('كلمة المرور')
+                            ->label(__('admin.user.password'))
                             ->password()
                             ->required(fn (string $operation): bool => $operation === 'create')
                             ->dehydrated(fn (?string $state) => filled($state))
                             ->maxLength(255),
                         Forms\Components\TextInput::make('university_id')
-                            ->label('الرقم الجامعي')
+                            ->label(__('admin.user.university_id'))
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(50),
                         Forms\Components\TextInput::make('phone_number')
-                            ->label('رقم الهاتف')
+                            ->label(__('admin.user.phone_number'))
                             ->tel()
                             ->maxLength(20),
                         Forms\Components\Select::make('role_id')
-                            ->label('الدور')
+                            ->label(__('admin.user.role'))
                             ->relationship('role', 'name')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Toggle::make('is_banned')
-                            ->label('محظور')
+                            ->label(__('admin.user.is_banned'))
                             ->default(false),
                     ])->columns(2),
             ]);
@@ -73,21 +86,21 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
+                    ->label(__('admin.user.id'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('full_name')
-                    ->label('الاسم الكامل')
+                    ->label(__('admin.user.full_name'))
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email')
-                    ->label('البريد الإلكتروني')
+                    ->label(__('admin.user.email'))
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('university_id')
-                    ->label('الرقم الجامعي')
+                    ->label(__('admin.user.university_id'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('role.name')
-                    ->label('الدور')
+                    ->label(__('admin.user.role'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'Admin' => 'danger',
@@ -95,7 +108,7 @@ class UserResource extends Resource
                         default => 'gray',
                     }),
                 Tables\Columns\IconColumn::make('is_banned')
-                    ->label('محظور')
+                    ->label(__('admin.user.is_banned'))
                     ->boolean()
                     ->trueIcon('heroicon-o-no-symbol')
                     ->falseIcon('heroicon-o-check-circle')
@@ -103,30 +116,30 @@ class UserResource extends Resource
                     ->falseColor('success')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ التسجيل')
+                    ->label(__('admin.user.date_registered'))
                     ->dateTime('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_banned')
-                    ->label('محظور')
-                    ->placeholder('الكل')
-                    ->trueLabel('محظورين فقط')
-                    ->falseLabel('غير محظورين فقط'),
+                    ->label(__('admin.user.banned_filter'))
+                    ->placeholder(__('admin.user.all'))
+                    ->trueLabel(__('admin.user.banned_only'))
+                    ->falseLabel(__('admin.user.active_only')),
             ])
             ->actions([
                 Action::make('toggleBan')
-                    ->label(fn (User $record) => $record->is_banned ? 'إلغاء الحظر' : 'حظر')
+                    ->label(fn (User $record) => $record->is_banned ? __('admin.user.toggle_unban') : __('admin.user.toggle_ban'))
                     ->icon(fn (User $record) => $record->is_banned ? 'heroicon-o-lock-open' : 'heroicon-o-no-symbol')
                     ->color(fn (User $record) => $record->is_banned ? 'success' : 'danger')
                     ->requiresConfirmation()
-                    ->modalHeading(fn (User $record) => $record->is_banned ? 'إلغاء حظر المستخدم' : 'حظر المستخدم')
-                    ->modalDescription(fn (User $record) => $record->is_banned ? 'هل أنت متأكد من إلغاء حظر هذا المستخدم؟' : 'هل أنت متأكد من حظر هذا المستخدم؟')
+                    ->modalHeading(fn (User $record) => $record->is_banned ? __('admin.user.unban_heading') : __('admin.user.ban_heading'))
+                    ->modalDescription(fn (User $record) => $record->is_banned ? __('admin.user.unban_description') : __('admin.user.ban_description'))
                     ->action(function (User $record) {
                         $record->update(['is_banned' => ! $record->is_banned]);
                         Notification::make()
-                            ->title($record->is_banned ? 'تم حظر المستخدم' : 'تم إلغاء حظر المستخدم')
+                            ->title($record->is_banned ? __('admin.user.user_banned') : __('admin.user.user_unbanned'))
                             ->success()
                             ->send();
                     }),

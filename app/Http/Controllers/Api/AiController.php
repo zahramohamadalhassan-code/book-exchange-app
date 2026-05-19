@@ -21,9 +21,18 @@ class AiController extends Controller
         $path = $request->file('cover_image')->store('temp/covers', 'public');
         $fullPath = storage_path('app/public/' . $path);
 
+        $moderation = $aiService->moderateImage($fullPath);
+
+        if (!$moderation['safe']) {
+            @unlink($fullPath);
+            return response()->json([
+                'success' => false,
+                'message' => $moderation['reason'],
+            ], 422);
+        }
+
         $details = $aiService->extractBookDetails($fullPath);
 
-        // حذف الملف المؤقت
         @unlink($fullPath);
 
         return response()->json([
@@ -33,20 +42,56 @@ class AiController extends Controller
     }
 
     /**
-     * اقتراح سعر الكتاب عبر AI
+     * اقتراح سعر الكتاب عبر AI (بالليرة السورية)
      */
     public function predictPrice(Request $request, GeminiAiService $aiService)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
-            'condition' => 'required|in:excellent,good,fair,poor',
+            'title'       => 'required|string|max:255',
+            'condition'   => 'required|in:excellent,good,fair,poor',
+            'author'      => 'nullable|string|max:255',
+            'pages_count' => 'nullable|integer|min:1',
         ]);
 
-        $price = $aiService->predictPrice($request->title, $request->condition);
+        $price = $aiService->predictPrice(
+            $request->title,
+            $request->condition,
+            $request->input('author', ''),
+            $request->input('pages_count', 0)
+        );
 
         return response()->json([
             'success' => true,
-            'price' => $price,
+            'price'   => $price,
+        ]);
+    }
+
+    /**
+     * فحص ملف PDF عبر AI للتحقق من أنه ملخص/كتاب دراسي
+     */
+    public function moderatePdf(Request $request, GeminiAiService $aiService)
+    {
+        $request->validate([
+            'pdf_file' => 'required|mimes:pdf|max:10000',
+        ]);
+
+        $path = $request->file('pdf_file')->store('temp/pdfs', 'public');
+        $fullPath = storage_path('app/public/' . $path);
+
+        $moderation = $aiService->moderatePdf($fullPath);
+
+        @unlink($fullPath);
+
+        if (!$moderation['safe']) {
+            return response()->json([
+                'success' => false,
+                'message' => $moderation['reason'],
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => '',
         ]);
     }
 }

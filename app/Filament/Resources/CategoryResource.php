@@ -16,30 +16,43 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static ?string $navigationGroup = 'إدارة المحتوى';
+    public static function getNavigationGroup(): string
+    {
+        return __('admin.content_management');
+    }
 
     protected static ?int $navigationSort = 4;
+
+    public static function getModelLabel(): string
+    {
+        return __('admin.category.model_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('admin.category.model_label_plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('بيانات التصنيف')
+                Forms\Components\Section::make(__('admin.category.section_data'))
                     ->schema([
                         Forms\Components\TextInput::make('university_name')
-                            ->label('اسم الجامعة')
+                            ->label(__('admin.category.university_name'))
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('faculty_name')
-                            ->label('اسم الكلية')
+                            ->label(__('admin.category.faculty_name'))
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('department_name')
-                            ->label('اسم القسم')
+                            ->label(__('admin.category.department_name'))
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('study_year')
-                            ->label('السنة الدراسية')
+                            ->label(__('admin.category.study_year'))
                             ->required()
                             ->maxLength(50),
                     ])->columns(2),
@@ -51,23 +64,23 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
+                    ->label(__('admin.category.id'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('university_name')
-                    ->label('الجامعة')
+                    ->label(__('admin.category.university'))
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('faculty_name')
-                    ->label('الكلية')
+                    ->label(__('admin.category.faculty'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('department_name')
-                    ->label('القسم')
+                    ->label(__('admin.category.department'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('study_year')
-                    ->label('السنة الدراسية')
+                    ->label(__('admin.category.study_year'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('admin.category.created_at'))
                     ->dateTime('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

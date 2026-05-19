@@ -1,116 +1,131 @@
 @extends('layouts.app')
-@section('title', $book->title . ' - منصة تبادل الكتب')
+@section('title', $book->title . ' - ' . __('messages.app_name'))
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-8">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {{-- صورة الكتاب --}}
         <div class="md:col-span-1">
             <div class="bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl h-80 flex items-center justify-center overflow-hidden">
                 @if($book->cover_image_url)
                     <img src="{{ asset('storage/' . $book->cover_image_url) }}" alt="{{ $book->title }}" class="w-full h-full object-cover rounded-2xl">
                 @else
-                    <span class="text-8xl opacity-50">📖</span>
+                    <div class="flex justify-center"><x-heroicon name="book-open" class="w-20 h-20 text-indigo-300" /></div>
                 @endif
             </div>
         </div>
 
-        {{-- تفاصيل الكتاب --}}
         <div class="md:col-span-2">
             <div class="flex items-start justify-between mb-4">
                 <h1 class="text-3xl font-bold text-gray-800">{{ $book->title }}</h1>
                 <span class="px-4 py-2 rounded-full text-sm font-bold text-white
                     {{ $book->offer_type === 'sale' ? 'bg-green-500' : ($book->offer_type === 'exchange' ? 'bg-blue-500' : 'bg-orange-500') }}">
-                    {{ $book->offer_type === 'sale' ? 'للبيع' : ($book->offer_type === 'exchange' ? 'للتبادل' : 'تبرع') }}
+                    {{ $book->offer_type === 'sale' ? __('messages.offer_types.sale') : ($book->offer_type === 'exchange' ? __('messages.offer_types.exchange') : __('messages.offer_types.donate')) }}
                 </span>
             </div>
 
             @if($book->author)
-                <p class="text-gray-500 text-lg mb-4">المؤلف: {{ $book->author }}</p>
+                <p class="text-gray-500 text-lg mb-4">{{ __('messages.books.author') }}: {{ $book->author }}</p>
             @endif
 
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="bg-gray-50 rounded-lg p-4">
-                    <p class="text-sm text-gray-500">الحالة</p>
+                    <p class="text-sm text-gray-500">{{ __('messages.books.condition') }}</p>
                     <p class="font-bold text-gray-800">
-                        {{ $book->condition === 'excellent' ? 'ممتاز' : ($book->condition === 'good' ? 'جيد' : ($book->condition === 'fair' ? 'مقبول' : 'ضعيف')) }}
+                        {{ $book->condition === 'excellent' ? __('messages.conditions.excellent') : ($book->condition === 'good' ? __('messages.conditions.good') : ($book->condition === 'fair' ? __('messages.conditions.fair') : __('messages.conditions.poor'))) }}
                     </p>
                 </div>
                 <div class="bg-gray-50 rounded-lg p-4">
-                    <p class="text-sm text-gray-500">السعر</p>
+                    <p class="text-sm text-gray-500">{{ __('messages.books.price') }}</p>
                     <p class="font-bold text-indigo-600 text-xl">
                         @if($book->offer_type === 'sale' && $book->price)
-                            ${{ number_format($book->price, 2) }}
+                            {{ number_format($book->price) }} SYP
                         @elseif($book->offer_type === 'donate')
-                            مجاني 🎁
+                            {{ __('messages.books.free') }} <x-heroicon name="gift" class="w-4 h-4 inline" />
                         @else
-                            تبادل 🔄
+                            {{ __('messages.books.exchange') }} <x-heroicon name="arrow-path" class="w-4 h-4 inline" />
+                            @if($book->exchange_for)
+                                <div class="text-sm text-gray-500 font-normal mt-1">{{ __('messages.books.requested') }}: {{ $book->exchange_for }}</div>
+                            @endif
                         @endif
                     </p>
                 </div>
                 <div class="bg-gray-50 rounded-lg p-4">
-                    <p class="text-sm text-gray-500">القسم</p>
-                    <p class="font-bold text-gray-800">{{ $book->category?->department_name }}</p>
+                    <p class="text-sm text-gray-500">{{ __('messages.books.department') }}</p>
+                    <p class="font-bold text-gray-800">{{ $book->category?->faculty_name }} - {{ $book->category?->study_year }}</p>
                 </div>
                 <div class="bg-gray-50 rounded-lg p-4">
-                    <p class="text-sm text-gray-500">صاحب الكتاب</p>
-                    <p class="font-bold text-gray-800">{{ $book->user?->full_name }}</p>
+                    <p class="text-sm text-gray-500">{{ __('messages.books.book_owner') }}</p>
+                    <div class="flex items-center justify-between">
+                        <p class="font-bold text-gray-800">{{ $book->user?->full_name }}</p>
+                        <a href="{{ route('users.ratings', $book->user) }}" class="flex items-center text-yellow-500 hover:text-yellow-600 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {{ app()->getLocale() === 'ar' ? 'me-1' : 'ms-1' }}" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span class="font-bold text-base hover:underline">{{ number_format($book->user?->average_rating ?? 0, 1) }}</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            {{-- زر طلب الكتاب --}}
             @auth
                 @if($book->user_id !== auth()->id() && $book->status === 'available')
                 <div x-data="{ showModal: false }">
                     <button @click="showModal = true"
-                            class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-700 transition w-full md:w-auto">
-                        📩 طلب هذا الكتاب
+                            class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-700 transition w-full md:w-auto inline-flex items-center gap-2">
+                        <x-heroicon name="paper-airplane" class="w-5 h-5" /> {{ __('messages.books.request_book') }}
                     </button>
 
-                    {{-- نافذة طلب الكتاب --}}
                     <div x-show="showModal" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showModal = false">
                         <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
-                            <h3 class="text-xl font-bold mb-4">طلب كتاب: {{ $book->title }}</h3>
+                            <h3 class="text-xl font-bold mb-4">{{ __('messages.books.request_heading') }} {{ $book->title }}</h3>
                             <form method="POST" action="{{ route('student.transactions.store') }}">
                                 @csrf
                                 <input type="hidden" name="book_id" value="{{ $book->id }}">
 
+                                @if($book->offer_type === 'exchange')
+                                    <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <p class="text-sm text-blue-800">
+                                            <strong>{{ __('messages.books.required_for_exchange') }}</strong> {{ $book->exchange_for ?? __('messages.student.transactions.undefined') }}
+                                        </p>
+                                        <p class="text-xs text-blue-600 mt-1">{{ __('messages.books.exchange_note') }}</p>
+                                    </div>
+                                @endif
+
                                 <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ الاستلام (اختياري)</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.books.meeting_date') }}</label>
                                     <input type="date" name="meeting_date" class="w-full border rounded-lg px-3 py-2">
                                 </div>
                                 <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">وقت الاستلام (اختياري)</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.books.meeting_time') }}</label>
                                     <input type="time" name="meeting_time" class="w-full border rounded-lg px-3 py-2">
                                 </div>
                                 <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">مكان الاستلام (اختياري)</label>
-                                    <input type="text" name="meeting_location" placeholder="مثال: بوابة الجامعة" class="w-full border rounded-lg px-3 py-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.books.meeting_location') }}</label>
+                                    <input type="text" name="meeting_location" placeholder="{{ __('messages.books.meeting_location_placeholder') }}" class="w-full border rounded-lg px-3 py-2">
                                 </div>
 
                                 <div class="flex gap-3">
-                                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-medium">إرسال الطلب</button>
-                                    <button type="button" @click="showModal = false" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 font-medium">إلغاء</button>
+                                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-medium">{{ __('messages.books.send_request') }}</button>
+                                    <button type="button" @click="showModal = false" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 font-medium">{{ __('messages.books.cancel') }}</button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
                 @elseif($book->user_id === auth()->id())
-                    <p class="text-gray-400 font-medium">هذا كتابك ✨</p>
+                    <p class="text-gray-400 font-medium flex items-center gap-1"><x-heroicon name="check-circle" class="w-5 h-5" /> {{ __('messages.books.your_book') }}</p>
                 @endif
             @else
                 <a href="{{ route('login') }}" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-700 transition inline-block">
-                    سجّل دخولك لطلب الكتاب
+                    {{ __('messages.books.login_to_request') }}
                 </a>
             @endauth
         </div>
     </div>
 
-    {{-- كتب مشابهة --}}
     @if($relatedBooks->count() > 0)
     <section class="mt-12">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">📖 كتب مشابهة</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><x-heroicon name="book-open" class="w-7 h-7 text-indigo-600" /> {{ __('messages.books.similar_books') }}</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             @foreach($relatedBooks as $related)
                 @include('components.book-card', ['book' => $related])

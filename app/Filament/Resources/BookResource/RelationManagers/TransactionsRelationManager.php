@@ -12,34 +12,37 @@ class TransactionsRelationManager extends RelationManager
 {
     protected static string $relationship = 'transactions';
 
-    protected static ?string $title = 'المعاملات';
+    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    {
+        return __('admin.relation.transactions');
+    }
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Select::make('requester_id')
-                    ->label('الطالب')
+                    ->label(__('admin.relation.requester'))
                     ->relationship('requester', 'full_name')
                     ->required(),
                 Forms\Components\Select::make('owner_id')
-                    ->label('المالك')
+                    ->label(__('admin.relation.owner'))
                     ->relationship('owner', 'full_name')
                     ->required(),
                 Forms\Components\Select::make('status')
-                    ->label('الحالة')
+                    ->label(__('admin.relation.status'))
                     ->options([
-                        'pending' => 'معلق',
-                        'accepted' => 'مقبول',
-                        'rejected' => 'مرفوض',
-                        'completed' => 'مكتمل',
-                        'cancelled' => 'ملغي',
+                        'pending' => __('admin.relation.statuses.pending'),
+                        'accepted' => __('admin.relation.statuses.accepted'),
+                        'rejected' => __('admin.relation.statuses.rejected'),
+                        'completed' => __('admin.relation.statuses.completed'),
+                        'cancelled' => __('admin.relation.statuses.cancelled'),
                     ])
                     ->required(),
                 Forms\Components\DatePicker::make('meeting_date')
-                    ->label('تاريخ اللقاء'),
+                    ->label(__('admin.relation.meeting_date')),
                 Forms\Components\TextInput::make('meeting_location')
-                    ->label('مكان اللقاء')
+                    ->label(__('admin.relation.meeting_location'))
                     ->maxLength(255),
             ]);
     }
@@ -50,11 +53,11 @@ class TransactionsRelationManager extends RelationManager
             ->recordTitleAttribute('id')
             ->columns([
                 Tables\Columns\TextColumn::make('requester.full_name')
-                    ->label('الطالب'),
+                    ->label(__('admin.relation.requester')),
                 Tables\Columns\TextColumn::make('owner.full_name')
-                    ->label('المالك'),
+                    ->label(__('admin.relation.owner')),
                 Tables\Columns\BadgeColumn::make('status')
-                    ->label('الحالة')
+                    ->label(__('admin.relation.status'))
                     ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
                         'accepted' => 'info',
@@ -64,10 +67,10 @@ class TransactionsRelationManager extends RelationManager
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('meeting_date')
-                    ->label('تاريخ اللقاء')
+                    ->label(__('admin.relation.meeting_date'))
                     ->date('Y-m-d'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('admin.relation.created_at'))
                     ->dateTime('Y-m-d')
                     ->sortable(),
             ])

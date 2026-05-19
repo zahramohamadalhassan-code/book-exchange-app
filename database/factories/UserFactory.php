@@ -19,7 +19,7 @@ class UserFactory extends Factory
     {
         return [
             'role_id' => Role::where('name', 'Student')->first()?->id ?? 2,
-            'university_id' => 'STU-' . fake()->unique()->numerify('#####'),
+            'university_id' => '202010' . fake()->unique()->numerify('###'),
             'full_name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),

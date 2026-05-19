@@ -15,8 +15,8 @@ class StatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('إجمالي الطلاب', User::count())
-                ->description('عدد المستخدمين المسجلين')
+            Stat::make(__('admin.widget.total_students'), User::count())
+                ->description(__('admin.widget.registered_users'))
                 ->descriptionIcon('heroicon-m-user-group')
                 ->color('success')
                 ->chart(User::selectRaw('DATE(created_at) as date, COUNT(*) as count')
@@ -25,8 +25,8 @@ class StatsOverviewWidget extends BaseWidget
                     ->orderBy('date')
                     ->pluck('count')
                     ->toArray()),
-            Stat::make('إجمالي الكتب', Book::count())
-                ->description('عدد الكتب المضافة')
+            Stat::make(__('admin.widget.total_books'), Book::count())
+                ->description(__('admin.widget.books_added_count'))
                 ->descriptionIcon('heroicon-m-book-open')
                 ->color('info')
                 ->chart(Book::selectRaw('DATE(created_at) as date, COUNT(*) as count')
@@ -35,8 +35,8 @@ class StatsOverviewWidget extends BaseWidget
                     ->orderBy('date')
                     ->pluck('count')
                     ->toArray()),
-            Stat::make('إجمالي الملاحظات الرقمية', DigitalNote::count())
-                ->description('عدد الملاحظات المضافة')
+            Stat::make(__('admin.widget.total_notes'), DigitalNote::count())
+                ->description(__('admin.widget.notes_added_count'))
                 ->descriptionIcon('heroicon-m-document-text')
                 ->color('warning')
                 ->chart(DigitalNote::selectRaw('DATE(created_at) as date, COUNT(*) as count')
@@ -45,8 +45,8 @@ class StatsOverviewWidget extends BaseWidget
                     ->orderBy('date')
                     ->pluck('count')
                     ->toArray()),
-            Stat::make('كتب معلقة', Book::where('moderation_status', 'pending')->count())
-                ->description('كتب بانتظار المراجعة')
+            Stat::make(__('admin.widget.pending_books'), Book::where('moderation_status', 'pending')->count())
+                ->description(__('admin.widget.pending_review'))
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('danger'),
         ];

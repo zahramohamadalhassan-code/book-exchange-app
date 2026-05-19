@@ -31,31 +31,24 @@ class DatabaseSeeder extends Seeder
         $this->call(CategorySeeder::class);
         $this->command->info('✅ Categories seeded.');
 
-        // 4. إنشاء 20 طالب وهمي
-        User::factory(20)->create();
-        $this->command->info('✅ 20 Students seeded.');
+        // 4. إنشاء طلاب (بيانات حقيقية)
+        $this->call(StudentSeeder::class);
+        $this->command->info('✅ Students seeded.');
 
-        // 5. إنشاء 50 كتاب وهمي
-        Book::factory(50)->create();
-        $this->command->info('✅ 50 Books seeded.');
+        // 5. إنشاء كتب
+        $this->call(BookSeeder::class);
+        $this->command->info('✅ Books seeded.');
 
-        // 6. إنشاء 20 ملخص رقمي وهمي
-        DigitalNote::factory(20)->create();
-        $this->command->info('✅ 20 Digital Notes seeded.');
+        // 6. إنشاء ملخصات رقمية
+        $this->call(DigitalNoteSeeder::class);
+        $this->command->info('✅ Digital Notes seeded.');
 
-        // 7. إنشاء 15 عملية تبادل وهمية
-        Transaction::factory(15)->create();
-        $this->command->info('✅ 15 Transactions seeded.');
+        // 7. إنشاء عمليات تبادل
+        $this->call(TransactionSeeder::class);
+        $this->command->info('✅ Transactions seeded.');
 
-        // 8. إنشاء عمليات مكتملة ثم تقييمات
-        $completedTransactions = Transaction::factory(5)->completed()->create();
-        foreach ($completedTransactions as $transaction) {
-            Rating::factory()->create([
-                'transaction_id' => $transaction->id,
-                'reviewer_id' => $transaction->requester_id,
-                'reviewed_user_id' => $transaction->owner_id,
-            ]);
-        }
-        $this->command->info('✅ 5 Completed transactions with ratings seeded.');
+        // 8. إنشاء تقييمات
+        $this->call(RatingSeeder::class);
+        $this->command->info('✅ Ratings seeded.');
     }
 }

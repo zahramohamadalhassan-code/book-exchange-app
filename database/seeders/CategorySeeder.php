@@ -9,35 +9,33 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = [
-            // كلية الهندسة المعلوماتية
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة المعلوماتية', 'department_name' => 'هندسة البرمجيات', 'study_year' => 'السنة الأولى'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة المعلوماتية', 'department_name' => 'هندسة البرمجيات', 'study_year' => 'السنة الثانية'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة المعلوماتية', 'department_name' => 'الذكاء الاصطناعي', 'study_year' => 'السنة الأولى'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة المعلوماتية', 'department_name' => 'الذكاء الاصطناعي', 'study_year' => 'السنة الثانية'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة المعلوماتية', 'department_name' => 'الشبكات والأمن السيبراني', 'study_year' => 'السنة الأولى'],
-
-            // كلية الهندسة الكهربائية
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة الكهربائية', 'department_name' => 'هندسة الاتصالات', 'study_year' => 'السنة الأولى'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة الكهربائية', 'department_name' => 'هندسة الاتصالات', 'study_year' => 'السنة الثانية'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة الكهربائية', 'department_name' => 'هندسة الإلكترونيات', 'study_year' => 'السنة الأولى'],
-
-            // كلية الهندسة المدنية
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة المدنية', 'department_name' => 'الهندسة الإنشائية', 'study_year' => 'السنة الأولى'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة المدنية', 'department_name' => 'هندسة المساحة', 'study_year' => 'السنة الأولى'],
-
-            // كلية الهندسة الميكانيكية
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة الميكانيكية', 'department_name' => 'هندسة الإنتاج', 'study_year' => 'السنة الأولى'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية الهندسة الميكانيكية', 'department_name' => 'هندسة الطاقة', 'study_year' => 'السنة الثانية'],
-
-            // كلية العلوم
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية العلوم', 'department_name' => 'الرياضيات', 'study_year' => 'السنة الأولى'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية العلوم', 'department_name' => 'الفيزياء', 'study_year' => 'السنة الأولى'],
-            ['university_name' => 'الجامعة التقنية', 'faculty_name' => 'كلية العلوم', 'department_name' => 'الكيمياء', 'study_year' => 'السنة الثانية'],
+        $departments = [
+            'هندسة معلوماتية',
+            'هندسة اتصالات',
+            'هندسة مدنية',
+            'هندسة معمارية والتخطيطي المعماري',
+            'العلوم الادارية والمالية',
+            'طب الاسنان',
+            'الصيدلة',
         ];
 
-        foreach ($categories as $category) {
-            Category::create($category);
+        $studyYears = ['السنة الأولى', 'السنة الثانية', 'السنة الثالثة', 'السنة الرابعة', 'السنة الخامسة'];
+
+        foreach ($departments as $department) {
+            foreach ($studyYears as $year) {
+                // استثناء السنة الخامسة لكلية العلوم الإدارية والمالية
+                if ($department === 'العلوم الادارية والمالية' && $year === 'السنة الخامسة') {
+                    continue;
+                }
+
+                // للتبسيط سنعتبر اسم الكلية والقسم هو نفسه بناءً على طلب المستخدم
+                Category::create([
+                    'university_name' => 'الجامعة',
+                    'faculty_name' => $department,
+                    'department_name' => 'عام',
+                    'study_year' => $year,
+                ]);
+            }
         }
     }
 }

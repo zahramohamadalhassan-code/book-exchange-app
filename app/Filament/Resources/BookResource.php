@@ -19,76 +19,89 @@ class BookResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
-    protected static ?string $navigationGroup = 'إدارة المحتوى';
+    public static function getNavigationGroup(): string
+    {
+        return __('admin.content_management');
+    }
 
     protected static ?int $navigationSort = 2;
+
+    public static function getModelLabel(): string
+    {
+        return __('admin.book.model_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('admin.book.model_label_plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('بيانات الكتاب')
+                Forms\Components\Section::make(__('admin.book.section_data'))
                     ->schema([
                         Forms\Components\TextInput::make('title')
-                            ->label('العنوان')
+                            ->label(__('admin.book.title'))
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('author')
-                            ->label('المؤلف')
+                            ->label(__('admin.book.author'))
                             ->required()
                             ->maxLength(255),
                         Forms\Components\Select::make('user_id')
-                            ->label('المستخدم')
+                            ->label(__('admin.book.user'))
                             ->relationship('user', 'full_name')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('category_id')
-                            ->label('التصنيف')
+                            ->label(__('admin.book.category'))
                             ->relationship('category', 'department_name')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('condition')
-                            ->label('حالة الكتاب')
+                            ->label(__('admin.book.condition'))
                             ->options([
-                                'excellent' => 'ممتاز',
-                                'good' => 'جيد',
-                                'fair' => 'مقبول',
-                                'poor' => 'سيء',
+                                'excellent' => __('admin.book.conditions.excellent'),
+                                'good' => __('admin.book.conditions.good'),
+                                'fair' => __('admin.book.conditions.fair'),
+                                'poor' => __('admin.book.conditions.poor'),
                             ])
                             ->required(),
                         Forms\Components\Select::make('offer_type')
-                            ->label('نوع العرض')
+                            ->label(__('admin.book.offer_type'))
                             ->options([
-                                'sale' => 'بيع',
-                                'exchange' => 'تبادل',
-                                'donate' => 'تبرع',
+                                'sale' => __('admin.book.offer_types.sale'),
+                                'exchange' => __('admin.book.offer_types.exchange'),
+                                'donate' => __('admin.book.offer_types.donate'),
                             ])
                             ->required(),
                         Forms\Components\TextInput::make('price')
-                            ->label('السعر')
+                            ->label(__('admin.book.price'))
                             ->numeric()
-                            ->prefix('SYP')
+                            ->prefix(__('admin.book.currency_syp'))
                             ->visible(fn (callable $get) => $get('offer_type') === 'sale'),
                         Forms\Components\Select::make('status')
-                            ->label('الحالة')
+                            ->label(__('admin.book.status'))
                             ->options([
-                                'available' => 'متاح',
-                                'pending' => 'قيد الانتظار',
-                                'sold' => 'مباع',
+                                'available' => __('admin.book.statuses.available'),
+                                'pending' => __('admin.book.statuses.pending'),
+                                'sold' => __('admin.book.statuses.sold'),
                             ])
                             ->required(),
                         Forms\Components\Select::make('moderation_status')
-                            ->label('حالة المراجعة')
+                            ->label(__('admin.book.moderation_status'))
                             ->options([
-                                'pending' => 'معلق',
-                                'approved' => 'مقبول',
-                                'rejected' => 'مرفوض',
+                                'pending' => __('admin.book.moderation_statuses.pending'),
+                                'approved' => __('admin.book.moderation_statuses.approved'),
+                                'rejected' => __('admin.book.moderation_statuses.rejected'),
                             ])
                             ->required(),
                         Forms\Components\TextInput::make('cover_image_url')
-                            ->label('رابط صورة الغلاف')
+                            ->label(__('admin.book.cover_image_url'))
                             ->url()
                             ->maxLength(500),
                     ])->columns(2),
@@ -100,20 +113,27 @@ class BookResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->label('العنوان')
+                    ->label(__('admin.book.title'))
                     ->searchable()
                     ->sortable()
                     ->limit(30),
                 Tables\Columns\TextColumn::make('author')
-                    ->label('المؤلف')
+                    ->label(__('admin.book.author'))
                     ->searchable()
                     ->limit(20),
                 Tables\Columns\TextColumn::make('user.full_name')
-                    ->label('المستخدم')
+                    ->label(__('admin.book.user'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('condition')
-                    ->label('حالة الكتاب')
+                    ->label(__('admin.book.condition'))
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'excellent' => __('admin.book.conditions.excellent'),
+                        'good' => __('admin.book.conditions.good'),
+                        'fair' => __('admin.book.conditions.fair'),
+                        'poor' => __('admin.book.conditions.poor'),
+                        default => $state,
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'excellent' => 'success',
                         'good' => 'primary',
@@ -122,8 +142,14 @@ class BookResource extends Resource
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('offer_type')
-                    ->label('نوع العرض')
+                    ->label(__('admin.book.offer_type'))
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'sale' => __('admin.book.offer_types.sale'),
+                        'exchange' => __('admin.book.offer_types.exchange'),
+                        'donate' => __('admin.book.offer_types.donate'),
+                        default => $state,
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'sale' => 'success',
                         'exchange' => 'info',
@@ -131,11 +157,17 @@ class BookResource extends Resource
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('price')
-                    ->label('السعر')
+                    ->label(__('admin.book.price'))
                     ->money('SYP')
                     ->sortable(),
                 Tables\Columns\BadgeColumn::make('status')
-                    ->label('الحالة')
+                    ->label(__('admin.book.status'))
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'available' => __('admin.book.statuses.available'),
+                        'pending' => __('admin.book.statuses.pending'),
+                        'sold' => __('admin.book.statuses.sold'),
+                        default => $state,
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'available' => 'success',
                         'pending' => 'warning',
@@ -143,7 +175,13 @@ class BookResource extends Resource
                         default => 'gray',
                     }),
                 Tables\Columns\BadgeColumn::make('moderation_status')
-                    ->label('حالة المراجعة')
+                    ->label(__('admin.book.moderation_status'))
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'approved' => __('admin.book.moderation_statuses.approved'),
+                        'rejected' => __('admin.book.moderation_statuses.rejected'),
+                        'pending' => __('admin.book.moderation_statuses.pending'),
+                        default => $state,
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'approved' => 'success',
                         'rejected' => 'danger',
@@ -151,63 +189,63 @@ class BookResource extends Resource
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ الإضافة')
+                    ->label(__('admin.book.date_added'))
                     ->dateTime('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('moderation_status')
-                    ->label('حالة المراجعة')
+                    ->label(__('admin.book.moderation_status'))
                     ->options([
-                        'pending' => 'معلق',
-                        'approved' => 'مقبول',
-                        'rejected' => 'مرفوض',
+                        'pending' => __('admin.book.moderation_statuses.pending'),
+                        'approved' => __('admin.book.moderation_statuses.approved'),
+                        'rejected' => __('admin.book.moderation_statuses.rejected'),
                     ]),
                 Tables\Filters\SelectFilter::make('condition')
-                    ->label('حالة الكتاب')
+                    ->label(__('admin.book.condition'))
                     ->options([
-                        'excellent' => 'ممتاز',
-                        'good' => 'جيد',
-                        'fair' => 'مقبول',
-                        'poor' => 'سيء',
+                        'excellent' => __('admin.book.conditions.excellent'),
+                        'good' => __('admin.book.conditions.good'),
+                        'fair' => __('admin.book.conditions.fair'),
+                        'poor' => __('admin.book.conditions.poor'),
                     ]),
                 Tables\Filters\SelectFilter::make('offer_type')
-                    ->label('نوع العرض')
+                    ->label(__('admin.book.offer_type'))
                     ->options([
-                        'sale' => 'بيع',
-                        'exchange' => 'تبادل',
-                        'donate' => 'تبرع',
+                        'sale' => __('admin.book.offer_types.sale'),
+                        'exchange' => __('admin.book.offer_types.exchange'),
+                        'donate' => __('admin.book.offer_types.donate'),
                     ]),
             ])
             ->actions([
                 Action::make('approveBook')
-                    ->label('قبول')
+                    ->label(__('admin.book.approve_book'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->modalHeading('قبول الكتاب')
-                    ->modalDescription('هل أنت متأكد من قبول هذا الكتاب؟')
+                    ->modalHeading(__('admin.book.approve_book_heading'))
+                    ->modalDescription(__('admin.book.approve_book_description'))
                     ->visible(fn (Book $record) => $record->moderation_status === 'pending')
                     ->action(function (Book $record) {
                         $record->update(['moderation_status' => 'approved']);
                         Notification::make()
-                            ->title('تم قبول الكتاب')
+                            ->title(__('admin.book.book_approved'))
                             ->success()
                             ->send();
                     }),
                 Action::make('rejectBook')
-                    ->label('رفض')
+                    ->label(__('admin.book.reject_book'))
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->modalHeading('رفض الكتاب')
-                    ->modalDescription('هل أنت متأكد من رفض هذا الكتاب؟')
+                    ->modalHeading(__('admin.book.reject_book_heading'))
+                    ->modalDescription(__('admin.book.reject_book_description'))
                     ->visible(fn (Book $record) => $record->moderation_status === 'pending')
                     ->action(function (Book $record) {
                         $record->update(['moderation_status' => 'rejected']);
                         Notification::make()
-                            ->title('تم رفض الكتاب')
+                            ->title(__('admin.book.book_rejected'))
                             ->danger()
                             ->send();
                     }),

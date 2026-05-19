@@ -18,48 +18,61 @@ class DigitalNoteResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'إدارة المحتوى';
+    public static function getNavigationGroup(): string
+    {
+        return __('admin.content_management');
+    }
 
     protected static ?int $navigationSort = 3;
+
+    public static function getModelLabel(): string
+    {
+        return __('admin.note.model_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('admin.note.model_label_plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('بيانات الملاحظات الرقمية')
+                Forms\Components\Section::make(__('admin.note.section_data'))
                     ->schema([
                         Forms\Components\TextInput::make('title')
-                            ->label('العنوان')
+                            ->label(__('admin.note.title'))
                             ->required()
                             ->maxLength(255),
                         Forms\Components\Textarea::make('description')
-                            ->label('الوصف')
+                            ->label(__('admin.note.description'))
                             ->maxLength(1000)
                             ->columnSpanFull(),
                         Forms\Components\Select::make('user_id')
-                            ->label('المستخدم')
+                            ->label(__('admin.note.user'))
                             ->relationship('user', 'full_name')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('category_id')
-                            ->label('التصنيف')
+                            ->label(__('admin.note.category'))
                             ->relationship('category', 'department_name')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\FileUpload::make('pdf_file_url')
-                            ->label('ملف PDF')
+                            ->label(__('admin.note.pdf_file'))
                             ->acceptedFileTypes(['application/pdf'])
                             ->directory('digital_notes')
                             ->required()
                             ->columnSpanFull(),
                         Forms\Components\Select::make('moderation_status')
-                            ->label('حالة المراجعة')
+                            ->label(__('admin.note.moderation_status'))
                             ->options([
-                                'pending' => 'معلق',
-                                'approved' => 'مقبول',
-                                'rejected' => 'مرفوض',
+                                'pending' => __('admin.note.moderation_statuses.pending'),
+                                'approved' => __('admin.note.moderation_statuses.approved'),
+                                'rejected' => __('admin.note.moderation_statuses.rejected'),
                             ])
                             ->required(),
                     ])->columns(2),
@@ -71,17 +84,23 @@ class DigitalNoteResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->label('العنوان')
+                    ->label(__('admin.note.title'))
                     ->searchable()
                     ->sortable()
                     ->limit(30),
                 Tables\Columns\TextColumn::make('user.full_name')
-                    ->label('المستخدم')
+                    ->label(__('admin.note.user'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.department_name')
-                    ->label('القسم'),
+                    ->label(__('admin.note.category')),
                 Tables\Columns\BadgeColumn::make('moderation_status')
-                    ->label('حالة المراجعة')
+                    ->label(__('admin.note.moderation_status'))
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'approved' => __('admin.note.moderation_statuses.approved'),
+                        'rejected' => __('admin.note.moderation_statuses.rejected'),
+                        'pending' => __('admin.note.moderation_statuses.pending'),
+                        default => $state,
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'approved' => 'success',
                         'rejected' => 'danger',
@@ -89,48 +108,48 @@ class DigitalNoteResource extends Resource
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ الإضافة')
+                    ->label(__('admin.note.created_at'))
                     ->dateTime('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('moderation_status')
-                    ->label('حالة المراجعة')
+                    ->label(__('admin.note.moderation_status'))
                     ->options([
-                        'pending' => 'معلق',
-                        'approved' => 'مقبول',
-                        'rejected' => 'مرفوض',
+                        'pending' => __('admin.note.moderation_statuses.pending'),
+                        'approved' => __('admin.note.moderation_statuses.approved'),
+                        'rejected' => __('admin.note.moderation_statuses.rejected'),
                     ]),
             ])
             ->actions([
                 Action::make('approveNote')
-                    ->label('قبول')
+                    ->label(__('admin.note.approve_note'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->modalHeading('قبول الملاحظة')
-                    ->modalDescription('هل أنت متأكد من قبول هذه الملاحظة؟')
+                    ->modalHeading(__('admin.note.approve_note_heading'))
+                    ->modalDescription(__('admin.note.approve_note_description'))
                     ->visible(fn (DigitalNote $record) => $record->moderation_status === 'pending')
                     ->action(function (DigitalNote $record) {
                         $record->update(['moderation_status' => 'approved']);
                         Notification::make()
-                            ->title('تم قبول الملاحظة')
+                            ->title(__('admin.note.note_approved'))
                             ->success()
                             ->send();
                     }),
                 Action::make('rejectNote')
-                    ->label('رفض')
+                    ->label(__('admin.note.reject_note'))
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->modalHeading('رفض الملاحظة')
-                    ->modalDescription('هل أنت متأكد من رفض هذه الملاحظة؟')
+                    ->modalHeading(__('admin.note.reject_note_heading'))
+                    ->modalDescription(__('admin.note.reject_note_description'))
                     ->visible(fn (DigitalNote $record) => $record->moderation_status === 'pending')
                     ->action(function (DigitalNote $record) {
                         $record->update(['moderation_status' => 'rejected']);
                         Notification::make()
-                            ->title('تم رفض الملاحظة')
+                            ->title(__('admin.note.note_rejected'))
                             ->danger()
                             ->send();
                     }),

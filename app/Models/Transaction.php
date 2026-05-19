@@ -10,7 +10,7 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'book_id', 'requester_id', 'owner_id',
+        'book_id', 'offered_book_id', 'requester_id', 'owner_id',
         'meeting_date', 'meeting_time', 'meeting_location', 'status'
     ];
 
@@ -29,6 +29,11 @@ class Transaction extends Model
     public function book()
     {
         return $this->belongsTo(Book::class);
+    }
+
+    public function offeredBook()
+    {
+        return $this->belongsTo(Book::class, 'offered_book_id');
     }
 
     public function requester()

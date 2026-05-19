@@ -21,31 +21,44 @@ class RatingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
 
-    protected static ?string $navigationGroup = 'المراقبة';
+    public static function getNavigationGroup(): string
+    {
+        return __('admin.monitoring');
+    }
 
     protected static ?int $navigationSort = 2;
+
+    public static function getModelLabel(): string
+    {
+        return __('admin.rating.model_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('admin.rating.model_label_plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('بيانات التقييم')
+                Section::make(__('admin.rating.section_data'))
                     ->schema([
                         TextInput::make('transaction_id')
-                            ->label('رقم المعاملة')
+                            ->label(__('admin.rating.transaction_id'))
                             ->disabled(),
                         TextInput::make('reviewer.full_name')
-                            ->label('المقيّم')
+                            ->label(__('admin.rating.reviewer'))
                             ->disabled(),
                         TextInput::make('reviewedUser.full_name')
-                            ->label('المقيَّم')
+                            ->label(__('admin.rating.reviewed_user'))
                             ->disabled(),
                         TextInput::make('stars')
-                            ->label('النجوم')
+                            ->label(__('admin.rating.stars'))
                             ->numeric()
                             ->disabled(),
                         Textarea::make('comment')
-                            ->label('التعليق')
+                            ->label(__('admin.rating.comment'))
                             ->disabled()
                             ->columnSpanFull(),
                     ])->columns(2),
@@ -56,19 +69,19 @@ class RatingResource extends Resource
     {
         return $infolist
             ->schema([
-                InfolistSection::make('بيانات التقييم')
+                InfolistSection::make(__('admin.rating.section_data'))
                     ->schema([
                         TextEntry::make('transaction_id')
-                            ->label('رقم المعاملة'),
+                            ->label(__('admin.rating.transaction_id')),
                         TextEntry::make('reviewer.full_name')
-                            ->label('المقيّم'),
+                            ->label(__('admin.rating.reviewer')),
                         TextEntry::make('reviewedUser.full_name')
-                            ->label('المقيَّم'),
+                            ->label(__('admin.rating.reviewed_user')),
                         TextEntry::make('stars')
-                            ->label('النجوم')
+                            ->label(__('admin.rating.stars'))
                             ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state)),
                         TextEntry::make('comment')
-                            ->label('التعليق')
+                            ->label(__('admin.rating.comment'))
                             ->columnSpanFull(),
                     ])->columns(2),
             ]);
@@ -79,24 +92,24 @@ class RatingResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('transaction_id')
-                    ->label('رقم المعاملة')
+                    ->label(__('admin.rating.transaction_id'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('reviewer.full_name')
-                    ->label('المقيّم')
+                    ->label(__('admin.rating.reviewer'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('reviewedUser.full_name')
-                    ->label('المقيَّم')
+                    ->label(__('admin.rating.reviewed_user'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('stars')
-                    ->label('النجوم')
+                    ->label(__('admin.rating.stars'))
                     ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('comment')
-                    ->label('التعليق')
+                    ->label(__('admin.rating.comment'))
                     ->limit(40)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ التقييم')
+                    ->label(__('admin.rating.date'))
                     ->dateTime('Y-m-d')
                     ->sortable(),
             ])

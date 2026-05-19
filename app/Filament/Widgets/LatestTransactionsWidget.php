@@ -24,15 +24,15 @@ class LatestTransactionsWidget extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('book.title')
-                    ->label('الكتاب')
+                    ->label(__('admin.widget.book_col'))
                     ->searchable()
                     ->limit(25),
                 Tables\Columns\TextColumn::make('requester.full_name')
-                    ->label('الطالب'),
+                    ->label(__('admin.widget.requester')),
                 Tables\Columns\TextColumn::make('owner.full_name')
-                    ->label('المالك'),
+                    ->label(__('admin.widget.owner')),
                 Tables\Columns\BadgeColumn::make('status')
-                    ->label('الحالة')
+                    ->label(__('admin.widget.status'))
                     ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
                         'accepted' => 'info',
@@ -42,9 +42,9 @@ class LatestTransactionsWidget extends BaseWidget
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('التاريخ')
+                    ->label(__('admin.widget.date'))
                     ->dateTime('Y-m-d H:i'),
             ])
-            ->heading('آخر المعاملات');
+            ->heading(__('admin.widget.latest_transactions'));
     }
 }

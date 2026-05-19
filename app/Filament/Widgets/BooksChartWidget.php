@@ -7,9 +7,12 @@ use Filament\Widgets\ChartWidget;
 
 class BooksChartWidget extends ChartWidget
 {
-    protected static ?string $heading = 'الكتب المضافة شهرياً';
-
     protected static ?int $sort = 1;
+
+    public function getHeading(): string
+    {
+        return __('admin.widget.books_monthly');
+    }
 
     protected function getData(): array
     {
@@ -32,7 +35,7 @@ class BooksChartWidget extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'الكتب المضافة',
+                    'label' => __('admin.widget.books_added'),
                     'data' => $values,
                     'borderColor' => 'rgb(245, 158, 11)',
                     'backgroundColor' => 'rgba(245, 158, 11, 0.1)',

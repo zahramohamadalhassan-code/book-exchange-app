@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', __('messages.app_name'))</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'منصة تبادل الكتب الجامعية')</title>
-    <meta name="description" content="@yield('description', 'منصة ويب لطلاب الجامعة لتبادل، بيع، أو التبرع بالكتب الورقية ورفع الملخصات الرقمية')">
+    <meta name="description" content="@yield('description', __('messages.tagline'))">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    @if(app()->getLocale() === 'ar')
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    @else
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        * { font-family: 'Tajawal', sans-serif; }
-    </style>
     @stack('styles')
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
