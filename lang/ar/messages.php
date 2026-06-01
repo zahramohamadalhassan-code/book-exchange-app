@@ -217,7 +217,7 @@ return [
                 'category' => 'القسم / التصنيف',
                 'choose_department' => 'اختر القسم',
                 'pdf_file' => 'ملف PDF',
-                'pdf_hint' => 'ملف PDF فقط، الحجم الأقصى 10 ميجابايت',
+                'pdf_hint' => 'ملف PDF فقط، الحجم الأقصى 25 ميجابايت',
                 'upload_btn' => 'رفع الملخص',
             ],
 
@@ -264,7 +264,8 @@ return [
             'acceptable' => 'مقبول',
             'poor' => 'ضعيف',
             'comment' => 'تعليق (اختياري)',
-            'comment_placeholder' => 'اكتب تعليقك حول التجربة...',
+            'comment_placeholder' => 'اختر تعليقاً...',
+            'no_comment' => 'بدون تعليق',
             'submit_rating' => 'إرسال التقييم',
             'already_rated' => 'تم التقييم ✓',
             'no_transactions' => 'لا توجد عمليات تبادل حالياً',

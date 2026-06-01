@@ -3,15 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Services\GeminiAiService;
 use Illuminate\Http\Request;
 
 class AiController extends Controller
 {
-    /**
-     * استخراج بيانات الكتاب من صورة الغلاف عبر AI
-     * يُستدعى عبر AJAX من نموذج إضافة كتاب
-     */
     public function extractBookDetails(Request $request, GeminiAiService $aiService)
     {
         $request->validate([
@@ -21,19 +18,37 @@ class AiController extends Controller
         $path = $request->file('cover_image')->store('temp/covers', 'public');
         $fullPath = storage_path('app/public/' . $path);
 
-        $moderation = $aiService->moderateImage($fullPath);
+        $existingCategories = Category::all();
+        $categoriesList = $existingCategories->map(function ($c) {
+            return "{$c->id}: {$c->faculty_name} - {$c->department_name} ({$c->study_year})";
+        })->implode("\n");
 
-        if (!$moderation['safe']) {
-            @unlink($fullPath);
+        $details = $aiService->extractBookDetails($fullPath, $categoriesList);
+
+        @unlink($fullPath);
+
+        if (isset($details['rejected']) && $details['rejected']) {
             return response()->json([
                 'success' => false,
-                'message' => $moderation['reason'],
+                'message' => $details['reject_reason'] ?? 'الصورة غير مقبولة',
             ], 422);
         }
 
-        $details = $aiService->extractBookDetails($fullPath);
+        if (isset($details['category_id']) && $details['category_id']) {
+            $categoryId = $details['category_id'];
+        } else {
+            $categoryId = $this->findOrCreateCategory(
+                $details['department_name'] ?? '',
+                $details['study_year'] ?? '',
+                $details['faculty_name'] ?? '',
+                $details['university_name'] ?? '',
+                $existingCategories
+            );
+        }
 
-        @unlink($fullPath);
+        if ($categoryId) {
+            $details['category_id'] = $categoryId;
+        }
 
         return response()->json([
             'success' => true,
@@ -41,9 +56,6 @@ class AiController extends Controller
         ]);
     }
 
-    /**
-     * اقتراح سعر الكتاب عبر AI (بالليرة السورية)
-     */
     public function predictPrice(Request $request, GeminiAiService $aiService)
     {
         $request->validate([
@@ -66,13 +78,10 @@ class AiController extends Controller
         ]);
     }
 
-    /**
-     * فحص ملف PDF عبر AI للتحقق من أنه ملخص/كتاب دراسي
-     */
     public function moderatePdf(Request $request, GeminiAiService $aiService)
     {
         $request->validate([
-            'pdf_file' => 'required|mimes:pdf|max:10000',
+            'pdf_file' => 'required|mimes:pdf|max:25000',
         ]);
 
         $path = $request->file('pdf_file')->store('temp/pdfs', 'public');
@@ -93,5 +102,75 @@ class AiController extends Controller
             'success' => true,
             'message' => '',
         ]);
+    }
+
+    public function analyzePdfContent(Request $request, GeminiAiService $aiService)
+    {
+        $request->validate([
+            'pdf_file' => 'required|mimes:pdf|max:25000',
+        ]);
+
+        $path = $request->file('pdf_file')->store('temp/pdfs', 'public');
+        $fullPath = storage_path('app/public/' . $path);
+
+        $result = $aiService->analyzePdfContent($fullPath);
+
+        @unlink($fullPath);
+
+        if (empty($result['description'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لم يتم استخراج وصف من الملف',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'description' => $result['description'],
+        ]);
+    }
+
+    private function findOrCreateCategory(string $departmentName, string $studyYear, string $facultyName, string $universityName, $existingCategories = null): ?int
+    {
+        if (empty($departmentName) && empty($studyYear) && empty($facultyName)) {
+            return null;
+        }
+
+        $categories = $existingCategories ?? Category::all();
+
+        foreach ($categories as $category) {
+            $matches = 0;
+
+            if (!empty($departmentName) && !empty($category->department_name)) {
+                if (mb_strpos($category->department_name, $departmentName) !== false || mb_strpos($departmentName, $category->department_name) !== false || $category->department_name === $departmentName) {
+                    $matches++;
+                }
+            }
+
+            if (!empty($studyYear) && !empty($category->study_year)) {
+                if (mb_strpos($category->study_year, $studyYear) !== false || mb_strpos($studyYear, $category->study_year) !== false || $category->study_year === $studyYear) {
+                    $matches++;
+                }
+            }
+
+            if (!empty($facultyName) && !empty($category->faculty_name)) {
+                if (mb_strpos($category->faculty_name, $facultyName) !== false || mb_strpos($facultyName, $category->faculty_name) !== false || $category->faculty_name === $facultyName) {
+                    $matches++;
+                }
+            }
+
+            if ($matches >= 2) {
+                return $category->id;
+            }
+        }
+
+        $category = Category::create([
+            'university_name' => $universityName ?: 'الجامعة الوطنية الخاصة',
+            'faculty_name'    => $facultyName ?: 'غير محدد',
+            'department_name' => $departmentName ?: 'غير محدد',
+            'study_year'      => $studyYear ?: 'غير محدد',
+        ]);
+
+        return $category->id;
     }
 }

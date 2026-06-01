@@ -12,7 +12,8 @@ class Book extends Model
 
     protected $fillable = [
         'user_id', 'category_id', 'title', 'author', 'cover_image_url',
-        'pages_count', 'condition', 'offer_type', 'exchange_for', 'price', 'status', 'moderation_status'
+        'pages_count', 'condition', 'offer_type', 'exchange_for', 'price', 'status', 'moderation_status',
+        'content_description', 'payment_method'
     ];
 
     /**

@@ -25,28 +25,34 @@
                         <div class="flex-1">
                             <h3 class="text-lg font-semibold text-indigo-900 mb-1">
                                 @if(app()->getLocale() === 'ar')
-                                    الرفع الذكي بالكاميرا
+                                    الرفع الذكي - غلاف الكتاب أو المحاضرة فقط
                                 @else
-                                    Smart Upload via Camera
+                                    Smart Upload - Book Cover or Lecture Only
                                 @endif
                             </h3>
                             <p class="text-sm text-indigo-700 mb-4">
                                 @if(app()->getLocale() === 'ar')
-                                    قم برفع غلاف الكتاب أولاً. سيقوم الذكاء الاصطناعي بتحليل الصورة، تقييم حالة الكتاب، وملء الحقول المتبقية تلقائياً لتوفير وقتك!
+                                    قم برفع صورة غلاف الكتاب أو المحاضرة فقط. يتم رفض صور أسئلة الدورات تلقائياً. سيقوم الذكاء الاصطناعي بتحليل الغلاف واستخراج البيانات تلقائياً.
                                 @else
-                                    Upload the book cover first. Our AI will analyze the image, evaluate the book's condition, and auto-fill the remaining fields to save your time!
+                                    Upload a book cover or lecture image only. Exam questions are automatically rejected. AI will analyze the cover and extract details automatically.
                                 @endif
                             </p>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.student.books.create.cover_image') }}</label>
-                            <input type="file" name="cover_image" accept="image/*" @change="handleCoverUpload($event)" class="w-full border border-white bg-white rounded-xl px-4 py-3 file:me-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 shadow-sm">
-                            <p class="text-xs text-gray-500 mt-2">{{ __('messages.student.books.create.supported_formats') }}</p>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.student.books.create.cover_image') }} <span class="text-red-500">*</span></label>
+                            <input type="file" name="cover_image" accept="image/jpeg,image/png,image/jpg" required @change="handleCoverUpload($event)" class="w-full border border-white bg-white rounded-xl px-4 py-3 file:me-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 shadow-sm">
+                            <p class="text-xs text-gray-500 mt-2">
+                                @if(app()->getLocale() === 'ar')
+                                    مطلوب: صورة غلاف كتاب أو محاضرة فقط (JPG, PNG). يُمنع رفع صور أسئلة الدورات.
+                                @else
+                                    Required: Book cover or lecture image only (JPG, PNG). Exam question images are prohibited.
+                                @endif
+                            </p>
                             <template x-if="aiLoading">
                                 <p class="text-sm text-indigo-600 mt-2 flex items-center gap-2 font-medium">
                                     <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                     @if(app()->getLocale() === 'ar')
-                                        جارٍ تحليل غلاف الكتاب وتقييم حالته بالذكاء الاصطناعي...
+                                        جارٍ تحليل غلاف الكتاب واستخراج البيانات...
                                     @else
-                                        Analyzing book cover and evaluating condition with AI...
+                                        Analyzing book cover and extracting details...
                                     @endif
                                 </p>
                             </template>
@@ -54,9 +60,9 @@
                                 <p class="text-sm text-green-600 mt-2 font-medium flex items-center gap-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
                                     @if(app()->getLocale() === 'ar')
-                                        تم تقييم حالة الكتاب وملء الحقول تلقائياً بنجاح!
+                                        تم تحليل الغلاف واستخراج البيانات بنجاح!
                                     @else
-                                        Book condition evaluated and fields auto-filled successfully!
+                                        Cover analyzed and details extracted successfully!
                                     @endif
                                 </p>
                             </template>
@@ -98,7 +104,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.student.books.create.department') }} <span class="text-red-500">*</span></label>
-                    <select name="category_id" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <select name="category_id" x-ref="categoryInput" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                         <option value="">{{ __('messages.student.books.create.choose_department') }}</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
@@ -128,6 +134,81 @@
                 </div>
 
                 <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        @if(app()->getLocale() === 'ar')
+                            وصف محتوى الكتاب (العناوين الرئيسية والمحتوى العام)
+                        @else
+                            Book Content Description (Main Headings and General Content)
+                        @endif
+                    </label>
+                    <div class="relative">
+                        <textarea name="content_description" x-ref="contentDescInput" rows="3" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="{{ app()->getLocale() === 'ar' ? 'وصف مختصر لمحتوى الكتاب: العناوين الرئيسية والمواضيع التي يغطيها...' : 'Brief description of the book content: main headings and topics covered...' }}">{{ old('content_description') }}</textarea>
+                        <template x-if="pdfLoading">
+                            <span class="absolute end-3 top-3">
+                                <svg class="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </span>
+                        </template>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        @if(app()->getLocale() === 'ar')
+                            يمكنك رفع ملف PDF أدناه ليقوم الذكاء الاصطناعي باستخراج الوصف تلقائياً.
+                        @else
+                            You can upload a PDF file below to let AI extract the description automatically.
+                        @endif
+                    </p>
+                    @error('content_description') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="md:col-span-2 bg-purple-50 border border-purple-100 rounded-xl p-5">
+                    <div class="flex items-start gap-3">
+                        <div class="bg-purple-100 p-2 rounded-full text-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-purple-900 mb-1">
+                                @if(app()->getLocale() === 'ar')
+                                    رفع ملف PDF لتحليل المحتوى (اختياري)
+                                @else
+                                    Upload PDF for Content Analysis (Optional)
+                                @endif
+                            </h4>
+                            <p class="text-xs text-purple-700 mb-3">
+                                @if(app()->getLocale() === 'ar')
+                                    ارفع ملف PDF للكتاب ليقوم الذكاء الاصطناعي باستخراج وصف المحتوى والعناوين الرئيسية. <strong>لن يتم تخزين الملف</strong>، يتم تحليله فقط.
+                                @else
+                                    Upload a PDF of the book for AI to extract content description and main headings. <strong>The file will NOT be stored</strong>, it's analyzed only.
+                                @endif
+                            </p>
+                            <input type="file" name="pdf_for_analysis" accept="application/pdf" @change="handlePdfUpload($event)" class="w-full border border-white bg-white rounded-xl px-4 py-3 file:me-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 shadow-sm">
+                            <template x-if="pdfLoading">
+                                <p class="text-sm text-purple-600 mt-2 flex items-center gap-2 font-medium">
+                                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    @if(app()->getLocale() === 'ar')
+                                        جارٍ تحليل محتوى PDF...
+                                    @else
+                                        Analyzing PDF content...
+                                    @endif
+                                </p>
+                            </template>
+                            <template x-if="pdfSuccess">
+                                <p class="text-sm text-green-600 mt-2 font-medium">
+                                    @if(app()->getLocale() === 'ar')
+                                        تم استخراج وصف المحتوى بنجاح!
+                                    @else
+                                        Content description extracted successfully!
+                                    @endif
+                                </p>
+                            </template>
+                            <template x-if="pdfError">
+                                <p class="text-sm text-orange-500 mt-2 font-medium" x-text="pdfError"></p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.student.books.create.offer_type') }} <span class="text-red-500">*</span></label>
                     <select name="offer_type" x-model="offerType" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                         <option value="">{{ __('messages.student.books.create.choose_offer') }}</option>
@@ -139,26 +220,55 @@
                 </div>
 
                 <div x-show="offerType === 'sale'" x-transition class="md:col-span-2">
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="block text-sm font-medium text-gray-700">{{ __('messages.student.books.create.price_syp') }} <span class="text-red-500">*</span></label>
-                        <button type="button" @click="suggestPrice()" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1" :disabled="aiPriceLoading">
-                            <template x-if="aiPriceLoading">
-                                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-sm font-medium text-gray-700">{{ __('messages.student.books.create.price_syp') }} <span class="text-red-500">*</span></label>
+                                <button type="button" @click="suggestPrice()" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1" :disabled="aiPriceLoading">
+                                    <template x-if="aiPriceLoading">
+                                        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    </template>
+                                    <template x-if="!aiPriceLoading">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09l2.846.813-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>
+                                    </template>
+                                    <span x-text="aiPriceLoading ? '...' : '{{ __('messages.student.books.create.suggest_price_btn') }}'"></span>
+                                </button>
+                            </div>
+                            <input type="number" name="price" x-ref="priceInput" value="{{ old('price') }}" step="0.01" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" :class="aiPriceLoading && 'bg-indigo-50 animate-pulse'">
+                            <template x-if="aiPriceSuccess">
+                                <p class="text-xs text-green-600 mt-1">{{ __('messages.student.books.create.price_suggested') }}</p>
                             </template>
-                            <template x-if="!aiPriceLoading">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09l2.846.813-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>
+                            <template x-if="aiPriceError">
+                                <p class="text-xs text-orange-500 mt-1" x-text="aiPriceError"></p>
                             </template>
-                            <span x-text="aiPriceLoading ? '...' : '{{ __('messages.student.books.create.suggest_price_btn') }}'"></span>
-                        </button>
+                            @error('price') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                @if(app()->getLocale() === 'ar')
+                                    طريقة الدفع
+                                @else
+                                    Payment Method
+                                @endif
+                            </label>
+                            <select name="payment_method" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                <option value="cash_on_delivery">
+                                    @if(app()->getLocale() === 'ar')
+                                        الدفع نقداً عند الاستلام
+                                    @else
+                                        Cash on Delivery
+                                    @endif
+                                </option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">
+                                @if(app()->getLocale() === 'ar')
+                                    الدفع يتم نقداً عند الاستلام فقط
+                                @else
+                                    Payment is cash on delivery only
+                                @endif
+                            </p>
+                        </div>
                     </div>
-                    <input type="number" name="price" x-ref="priceInput" value="{{ old('price') }}" step="0.01" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" :class="aiPriceLoading && 'bg-indigo-50 animate-pulse'">
-                    <template x-if="aiPriceSuccess">
-                        <p class="text-xs text-green-600 mt-1">{{ __('messages.student.books.create.price_suggested') }}</p>
-                    </template>
-                    <template x-if="aiPriceError">
-                        <p class="text-xs text-orange-500 mt-1" x-text="aiPriceError"></p>
-                    </template>
-                    @error('price') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                 </div>
 
                 <div x-show="offerType === 'exchange'" x-transition class="md:col-span-2">
@@ -184,10 +294,14 @@ function bookForm() {
         aiLoading: false,
         aiSuccess: false,
         aiError: '',
-        
+
         aiPriceLoading: false,
         aiPriceSuccess: false,
         aiPriceError: '',
+
+        pdfLoading: false,
+        pdfSuccess: false,
+        pdfError: '',
 
         async handleCoverUpload(event) {
             const file = event.target.files[0];
@@ -216,18 +330,30 @@ function bookForm() {
                     const titleInput = this.$refs.titleInput;
                     const authorInput = this.$refs.authorInput;
                     const conditionInput = this.$refs.conditionInput;
+                    const categoryInput = this.$refs.categoryInput;
 
-                    if (result.data.title && !titleInput.value) {
+                    if (result.data.title) {
                         titleInput.value = result.data.title;
                         titleInput.dispatchEvent(new Event('input'));
                     }
-                    if (result.data.author && !authorInput.value) {
+                    if (result.data.author) {
                         authorInput.value = result.data.author;
                         authorInput.dispatchEvent(new Event('input'));
                     }
-                    if (result.data.condition && !conditionInput.value) {
+                    if (result.data.condition) {
                         conditionInput.value = result.data.condition;
                         conditionInput.dispatchEvent(new Event('change'));
+                    }
+                    if (result.data.category_id) {
+                        const exists = Array.from(categoryInput.options).some(o => o.value == result.data.category_id);
+                        if (!exists) {
+                            const opt = document.createElement('option');
+                            opt.value = result.data.category_id;
+                            opt.textContent = (result.data.faculty_name || '') + ' - ' + (result.data.department_name || '') + ' (' + (result.data.study_year || '') + ')';
+                            categoryInput.appendChild(opt);
+                        }
+                        categoryInput.value = result.data.category_id;
+                        categoryInput.dispatchEvent(new Event('change'));
                     }
                     this.aiSuccess = true;
                 } else {
@@ -239,6 +365,46 @@ function bookForm() {
                 this.aiError = '{{ app()->getLocale() === "ar" ? "حدث خطأ أثناء التحليل" : "An error occurred during analysis" }}';
             } finally {
                 this.aiLoading = false;
+            }
+        },
+
+        async handlePdfUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            this.pdfLoading = true;
+            this.pdfSuccess = false;
+            this.pdfError = '';
+
+            const formData = new FormData();
+            formData.append('pdf_file', file);
+
+            try {
+                const response = await fetch('{{ route("ai.analyze-pdf-content") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success && result.description) {
+                    const contentDescInput = this.$refs.contentDescInput;
+                    if (!contentDescInput.value.trim()) {
+                        contentDescInput.value = result.description;
+                        contentDescInput.dispatchEvent(new Event('input'));
+                    }
+                    this.pdfSuccess = true;
+                } else {
+                    this.pdfError = result.message || '{{ app()->getLocale() === "ar" ? "لم يتم تحليل الملف" : "Could not analyze the file" }}';
+                }
+            } catch (e) {
+                this.pdfError = '{{ app()->getLocale() === "ar" ? "حدث خطأ أثناء تحليل الملف" : "An error occurred during analysis" }}';
+            } finally {
+                this.pdfLoading = false;
             }
         },
 

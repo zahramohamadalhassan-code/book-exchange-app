@@ -217,7 +217,7 @@ return [
                 'category' => 'Department / Category',
                 'choose_department' => 'Choose Department',
                 'pdf_file' => 'PDF File',
-                'pdf_hint' => 'PDF file only, max size 10MB',
+                'pdf_hint' => 'PDF file only, max size 25MB',
                 'upload_btn' => 'Upload Summary',
             ],
 
@@ -264,7 +264,8 @@ return [
             'acceptable' => 'Acceptable',
             'poor' => 'Poor',
             'comment' => 'Comment (optional)',
-            'comment_placeholder' => 'Write your comment about the experience...',
+            'comment_placeholder' => 'Choose a comment...',
+            'no_comment' => 'No comment',
             'submit_rating' => 'Submit Rating',
             'already_rated' => 'Rated ✓',
             'no_transactions' => 'No exchange transactions yet',

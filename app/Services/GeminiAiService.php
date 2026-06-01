@@ -31,7 +31,7 @@ class GeminiAiService
      * استخراج تفاصيل الكتاب من صورة الغلاف (Smart Auto-Fill)
      * يشمل: العنوان، المؤلف، وتحديد حالة الكتاب من الصورة
      */
-    public function extractBookDetails(string $imageUrl): array
+    public function extractBookDetails(string $imageUrl, string $categoriesList = ''): array
     {
         if (empty($this->apiKey) || empty($this->apiUrl)) {
             return $this->fallbackBookDetails();
@@ -41,13 +41,47 @@ class GeminiAiService
             $imageData = base64_encode(file_get_contents($imageUrl));
             $mimeType = $this->getMimeType($imageUrl);
 
+            $categoriesSection = '';
+            if (!empty($categoriesList)) {
+                $categoriesSection = "\n\nقائمة الأقسام الموجودة بالمنصة:\n{$categoriesList}\nاختر القسم الأنسب من القائمة أعلاه. إذا لم تجد تطابقاً اكتب الاسم كما يظهر على الغلاف.\n";
+            }
+
+            $prompt = 'حلل هذه الصورة بدقة. قد تكون صورة غلاف كتاب أو غلاف محاضرة جامعية.
+
+المهام:
+1. تحقق أن الصورة مقبولة: يجب أن تكون لغلاف كتاب أو محاضرة جامعية فقط. ارفض أسئلة الامتحانات وأوراق الاختبارات وكشوف الدرجات والصور الشخصية وأي شيء غير تعليمي.
+2. استخرج البيانات:
+   - title: عنوان الكتاب أو المحاضرة الظاهر على الغلاف
+   - author: اسم المؤلف أو المحاضر إن وُجد
+   - condition: حالة الكتاب المادي من الصورة (excellent/good/fair/poor)
+   - study_year: السنة الدراسية إن وُجدت (مثال: السنة الأولى، السنة الثانية...)
+   - department_name: القسم والاختصاص الدقيق. إذا مكتوب "كلية الهندسة" فقط بدون فرع، استنتج الفرع من عنوان الكتاب:
+     * برمجة أو حواسيب أو شبكات → هندسة الحواسيب
+     * اتصالات أو إشارات أو هوائيات → هندسة الاتصالات
+     * كهرباء أو إلكترونيات أو دوائر كهربائية → هندسة كهربائية
+     * ميكانيكا أو آلات أو تصنيع → هندسة ميكانيكية
+     * بناء أو تصميم معماري أو إنشائي → هندسة مدنية
+     * إدارة أو محاسبة أو تمويل → إدارة أعمال / محاسبة
+     * طب أو تشريح أو صيدلة → طب بشري / صيدلة
+     * حقوق أو قانون → قانون
+     * رياضيات أو فيزياء أو كيمياء → علوم أساسية
+     * لغة عربية أو إنجليزية أو ترجمة → آداب / لغات
+   - faculty_name: اسم الكلية (مثال: كلية الهندسة، كلية الطب)
+   - university_name: اسم الجامعة إن وُجد' . $categoriesSection . '
+   - category_id: رقم القسم الأنسب من القائمة المرفقة (رقم صحيح)، وإذا لم تجد تطابقاً ضعه null
+أجب JSON فقط:
+{"accepted": true, "title": "...", "author": "...", "condition": "...", "study_year": "...", "department_name": "...", "faculty_name": "...", "university_name": "...", "category_id": null, "reason": ""}
+
+غير مقبول:
+{"accepted": false, "title": "", "author": "", "condition": "", "study_year": "", "department_name": "", "faculty_name": "", "university_name": "", "category_id": null, "reason": "سبب الرفض"}';
+
             $response = $this->sendRequest([
                 [
                     'role' => 'user',
                     'content' => [
                         [
                             'type' => 'text',
-                            'text' => 'انظر إلى صورة غلاف هذا الكتاب واستخرج العنوان والمؤلف وحالة الكتاب الفعلية. الحالات الممكنة: excellent (ممتاز/كالجديد)، good (جيد)، fair (مقبول/به علامات)، poor (ضعيف/مهترئ). أجب بتنسيق JSON فقط: {"title": "عنوان الكتاب", "author": "اسم المؤلف", "condition": "excellent"}'
+                            'text' => $prompt
                         ],
                         [
                             'type' => 'image_url',
@@ -66,18 +100,43 @@ class GeminiAiService
                 $text = trim($text);
 
                 $data = json_decode($text, true);
-                if (isset($data['title'])) {
-                    $validConditions = ['excellent', 'good', 'fair', 'poor'];
-                    $condition = $data['condition'] ?? '';
-                    if (!in_array($condition, $validConditions)) {
-                        $condition = '';
-                    }
+
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    Log::warning('AI Service: JSON parse error in extractBookDetails', ['raw' => $text]);
+                    return $this->fallbackBookDetails();
+                }
+
+                $accepted = $data['accepted'] ?? true;
+                if (!$accepted) {
                     return [
-                        'title'     => $data['title'] ?? '',
-                        'author'    => $data['author'] ?? '',
-                        'condition' => $condition,
+                        'title'           => '',
+                        'author'          => '',
+                        'condition'       => '',
+                        'study_year'      => '',
+                        'department_name' => '',
+                        'faculty_name'    => '',
+                        'university_name' => '',
+                        'rejected'        => true,
+                        'reject_reason'   => $data['reason'] ?? 'الصورة غير مقبولة',
                     ];
                 }
+
+                $validConditions = ['excellent', 'good', 'fair', 'poor'];
+                $condition = $data['condition'] ?? '';
+                if (!in_array($condition, $validConditions)) {
+                    $condition = '';
+                }
+
+                return [
+                    'title'           => $data['title'] ?? '',
+                    'author'          => $data['author'] ?? '',
+                    'condition'       => $condition,
+                    'study_year'      => $data['study_year'] ?? '',
+                    'department_name' => $data['department_name'] ?? '',
+                    'faculty_name'    => $data['faculty_name'] ?? '',
+                    'university_name' => $data['university_name'] ?? '',
+                    'category_id'     => $data['category_id'] ?? null,
+                ];
             }
 
             Log::warning('AI Service: Failed to extract book details');
@@ -92,18 +151,18 @@ class GeminiAiService
     /**
      * اقتراح سعر عادل للكتاب بالليرة السورية (SYP)
      * سعر الصفحة حسب الحالة:
-     *   excellent = 2.0 ل.س/صفحة
-     *   good      = 1.5 ل.س/صفحة
-     *   fair      = 1.0 ل.س/صفحة
+     *   excellent = 1.25 ل.س/صفحة
+     *   good      = 1.0 ل.س/صفحة
+     *   fair      = 0.75 ل.س/صفحة
      *   poor      = 0.5 ل.س/صفحة
      * السعر = عدد الصفحات × سعر الصفحة حسب الحالة
      */
     public function predictPrice(string $title, string $condition, string $author = '', int $pagesCount = 0): float
     {
         $pricePerPage = [
-            'excellent' => 2.0,
-            'good'      => 1.5,
-            'fair'      => 1.0,
+            'excellent' => 1.25,
+            'good'      => 1.0,
+            'fair'      => 0.75,
             'poor'      => 0.5,
         ];
 
@@ -127,7 +186,7 @@ class GeminiAiService
         }
 
         try {
-            $pricingInfo = "سعر الصفحة حسب الحالة: ممتاز=2 ل.س، جيد=1.5 ل.س، مقبول=1 ل.س، ضعيف=0.5 ل.س.";
+            $pricingInfo = "سعر الصفحة حسب الحالة: ممتاز=1.25 ل.س، جيد=1 ل.س، مقبول=0.75 ل.س، ضعيف=0.5 ل.س.";
             $pagesInfo = $pagesCount > 0
                 ? " الكتاب يحتوي على {$pagesCount} صفحة."
                 : '';
@@ -190,7 +249,7 @@ class GeminiAiService
                     'content' => [
                         [
                             'type' => 'text',
-                            'text' => 'حلل هذه الصورة وأجب بتنسيق JSON فقط: {"safe": true/false, "is_book": true/false, "reason": "سبب الرفض إن وُجد"}. القواعد: 1) هل تحتوي على محتوى غير لائق أو عنيف أو غير مناسب لمنصة تعليمية؟ 2) هل الصورة تمت بصلة لكتاب أو محاضرة أو ملخص جامعي (غلاف كتاب، صفحات كتاب، ملاحظات دراسية، ملخص)؟ إذا لم تكن الصورة لكتاب أو محاضرة أو ملخص (مثلاً: صورة شخصية، طبيعة، طعام، سيارة، إلخ) ارفضها.'
+                            'text' => 'حلل هذه الصورة وأجب بتنسيق JSON فقط: {"safe": true/false, "is_book": true/false, "reason": "سبب الرفض إن وُجد"}. القواعد الصارمة: 1) هل تحتوي على محتوى غير لائق أو عنيف أو غير مناسب لمنصة تعليمية؟ 2) هل الصورة هي لغلاف كتاب أو محاضرة جامعية فقط؟ الصور المقبولة: غلاف كتاب، صفحات كتاب، غلاف محاضرة. الصور المرفوضة: أسئلة امتحانات، أوراق امتحانية، كشوف درجات، صور شخصية، طبيعة، طعام، سيارات، وأي شيء ليس غلاف كتاب أو محاضرة. إذا كانت الصورة لأسئلة امتحان أو اختبار، ارفضها مع السبب.'
                         ],
                         [
                             'type' => 'image_url',
@@ -217,7 +276,7 @@ class GeminiAiService
                     return ['safe' => false, 'reason' => $reason ?: 'محتوى غير لائق'];
                 }
                 if (!$isBook) {
-                    return ['safe' => false, 'reason' => 'الصورة لا تمت بصلة لغلاف كتاب أو محاضرة أو ملخص'];
+                    return ['safe' => false, 'reason' => 'الصورة ليست لغلاف كتاب أو محاضرة'];
                 }
 
                 return ['safe' => true, 'reason' => ''];
@@ -246,21 +305,29 @@ class GeminiAiService
             $parser = new \Smalot\PdfParser\Parser();
             $pdf = $parser->parseFile($pdfPath);
             $text = $pdf->getText();
+            $pages = $pdf->getPages();
+            $pageCount = count($pages);
 
-            if (empty(trim($text))) {
-                return ['safe' => false, 'reason' => 'لم يتم استخراج نص من الملف. يرجى رفع ملف PDF يحتوي على نص قابل للقراءة.'];
+            $cleanText = preg_replace('/\bCamScanner\b/i', '', $text);
+            $cleanText = trim(preg_replace('/\s+/', ' ', $cleanText));
+
+            if (empty($cleanText) || mb_strlen($cleanText) < 20) {
+                if ($pageCount > 0) {
+                    return ['safe' => true, 'reason' => ''];
+                }
+                return ['safe' => false, 'reason' => 'لم يتم استخراج نص من الملف.'];
             }
 
-            $textSample = mb_substr($text, 0, 4000);
+            $textSample = mb_substr($cleanText, 0, 4000);
 
             $response = $this->sendRequest([
                 [
                     'role' => 'system',
-                    'content' => 'أنت مراقب محتوى صارم في منصة تعليمية جامعية. يجب أن ترفض أي ملف لا يحتوي على محتوى تعليمي أكاديمي واضح.'
+                    'content' => 'أنت مراقب محتوى في منصة تعليمية جامعية.'
                 ],
                 [
                     'role' => 'user',
-                    'content' => "إليك نص مستخرج من ملف PDF رفعه طالب كملخص دراسي على منصة جامعية:\n\n---\n{$textSample}\n---\n\nحلل هذا النص بدقة وأجب بتنسيق JSON فقط: {\"is_study_material\": true/false, \"reason\": \"سبب الرفض\"}\n\nشروط القبول الصارمة - يجب أن يحتوي على واحد على الأقل:\n- ملخص لمادة دراسية أو محاضرة أكاديمية\n- كتاب أو فصل من كتاب جامعي\n- ملاحظات دراسية أو حل مسائل\n- بحث علمي أو ورقة أكاديمية\n- شرح لمفاهيم أكاديمية (رياضيات، فيزياء، برمجة، طب، هندسة...)\n- امتحانات أو أسئلة دراسية\n\nارفض الملف إذا كان يحتوي على:\n- نصوص غير مفهومة أو رموز عشوائية\n- محتوى غير لائق أو عنيف\n- روايات أو قصص غير دراسية\n- أغاني أو كلمات أغاني\n- إعلانات أو تسويق\n- وصفات طبخ أو رياضة أو ترفيه\n- محتوى شخصي أو رسائل خاصة\n- أي شيء لا علاقة له بالدراسة الأكاديمية\n\nكن صارماً: إذا لم تكن متأكداً بنسبة 80% أن المحتوى أكاديمي، ارفضه."
+                    'content' => "إليك نص مستخرج من ملف PDF رفعه طالب على منصة جامعية:\n\n---\n{$textSample}\n---\n\nحلل هذا النص وأجب بتنسيق JSON فقط: {\"is_study_material\": true/false, \"reason\": \"سبب الرفض\"}\n\nشروط القبول - يجب أن يحتوي على واحد على الأقل:\n- ملخص لمادة دراسية أو محاضرة أكاديمية\n- كتاب أو فصل من كتاب جامعي\n- ملاحظات دراسية أو حل مسائل\n- بحث علمي أو ورقة أكاديمية\n- شرح لمفاهيم أكاديمية\n- تعريفات أو مصطلحات أكاديمية\n\nارفض الملف إذا كان يحتوي على:\n- محتوى غير لائق أو عنيف\n- روايات أو قصص غير دراسية\n- إعلانات أو تسويق\n- أي شيء لا علاقة له بالدراسة الأكاديمية"
                 ]
             ]);
 
@@ -275,17 +342,17 @@ class GeminiAiService
                 $reason = $data['reason'] ?? '';
 
                 if (!$isStudy) {
-                    return ['safe' => false, 'reason' => $reason ?: 'الملف لا يحتوي على ملخص دراسي أو محاضرة أو كتاب جامعي'];
+                    return ['safe' => false, 'reason' => $reason ?: 'الملف لا يحتوي على محتوى دراسي'];
                 }
 
                 return ['safe' => true, 'reason' => ''];
             }
 
-            return ['safe' => false, 'reason' => 'لم يتم التحقق من الملف، يرجى المحاولة مرة أخرى'];
+            return ['safe' => true, 'reason' => ''];
 
         } catch (\Exception $e) {
             Log::error('AI Service Error (moderatePdf): ' . $e->getMessage());
-            return ['safe' => false, 'reason' => 'حدث خطأ أثناء تحليل الملف، يرجى المحاولة مرة أخرى'];
+            return ['safe' => true, 'reason' => ''];
         }
     }
 
@@ -330,21 +397,72 @@ class GeminiAiService
         return null;
     }
 
+    /**
+     * تحليل محتوى ملف PDF لاستخراج وصف المحتوى
+     * لا يتم تخزين الملف، فقط تحليله واستخراج الوصف
+     */
+    public function analyzePdfContent(string $pdfPath): array
+    {
+        if (empty($this->apiKey) || empty($this->apiUrl)) {
+            return ['description' => ''];
+        }
+
+        try {
+            $parser = new \Smalot\PdfParser\Parser();
+            $pdf = $parser->parseFile($pdfPath);
+            $text = $pdf->getText();
+
+            $cleanText = preg_replace('/\bCamScanner\b/i', '', $text);
+            $cleanText = trim(preg_replace('/\s+/', ' ', $cleanText));
+
+            if (empty($cleanText) || mb_strlen($cleanText) < 20) {
+                return ['description' => ''];
+            }
+
+            $textSample = mb_substr($cleanText, 0, 6000);
+
+            $response = $this->sendRequest([
+                [
+                    'role' => 'user',
+                    'content' => "أنت خبير في تلخيص المحتوى الأكاديمي. إليك نص مستخرج من كتاب أو محاضرة جامعية:\n\n---\n{$textSample}\n---\n\nقم بتحليل هذا المحتوى وأجب بتنسيق JSON فقط: {\"description\": \"وصف مختصر للمحتوى يتضمن العناوين الرئيسية والمواضيع التي يغطيها بشكل عام، بحد أقصى 300 حرف\"}"
+                ]
+            ]);
+
+            if ($response && isset($response['choices'][0]['message']['content'])) {
+                $text = $response['choices'][0]['message']['content'];
+                $text = preg_replace('/```json\s*/', '', $text);
+                $text = preg_replace('/```\s*/', '', $text);
+                $text = trim($text);
+
+                $data = json_decode($text, true);
+                if (isset($data['description'])) {
+                    return ['description' => $data['description']];
+                }
+            }
+
+            return ['description' => ''];
+
+        } catch (\Exception $e) {
+            Log::error('AI Service Error (analyzePdfContent): ' . $e->getMessage());
+            return ['description' => ''];
+        }
+    }
+
     private function fallbackBookDetails(): array
     {
-        return ['title' => '', 'author' => '', 'condition' => ''];
+        return ['title' => '', 'author' => '', 'condition' => '', 'study_year' => '', 'department_name' => '', 'faculty_name' => '', 'university_name' => ''];
     }
 
     private function fallbackPrice(string $condition, int $pagesCount = 0): float
     {
         $pricePerPage = [
-            'excellent' => 2.0,
-            'good'      => 1.5,
-            'fair'      => 1.0,
+            'excellent' => 1.25,
+            'good'      => 1.0,
+            'fair'      => 0.75,
             'poor'      => 0.5,
         ];
 
-        $perPage = $pricePerPage[$condition] ?? 1.5;
+        $perPage = $pricePerPage[$condition] ?? 1.0;
 
         if ($pagesCount > 0) {
             return round($pagesCount * $perPage, 2);

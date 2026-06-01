@@ -67,5 +67,6 @@ Route::middleware(['auth'])->prefix('api')->group(function () {
     Route::post('/ai/extract-book', [AiController::class, 'extractBookDetails'])->name('ai.extract-book');
     Route::post('/ai/predict-price', [AiController::class, 'predictPrice'])->name('ai.predict-price');
     Route::post('/ai/moderate-pdf', [AiController::class, 'moderatePdf'])->name('ai.moderate-pdf');
+    Route::post('/ai/analyze-pdf-content', [AiController::class, 'analyzePdfContent'])->name('ai.analyze-pdf-content');
 });
 require __DIR__.'/auth.php';

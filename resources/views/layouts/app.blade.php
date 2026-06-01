@@ -17,7 +17,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="bg-[#f8f9fc] min-h-screen flex flex-col text-slate-800 selection:bg-yellow-300 selection:text-indigo-900">
     @include('components.navbar')
     @include('components.toast')
 

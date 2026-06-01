@@ -18,13 +18,13 @@ $color = $attributes->get('color', 'indigo');
     <svg class="{{ $sizeClass }} flex-shrink-0" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#4f46e5"/>
-                <stop offset="50%" style="stop-color:#6366f1"/>
-                <stop offset="100%" style="stop-color:#7c3aed"/>
+                <stop offset="0%" style="stop-color:#1e3a8a"/>
+                <stop offset="50%" style="stop-color:#1e40af"/>
+                <stop offset="100%" style="stop-color:#1d4ed8"/>
             </linearGradient>
             <linearGradient id="logoGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#818cf8"/>
-                <stop offset="100%" style="stop-color:#a78bfa"/>
+                <stop offset="0%" style="stop-color:#eab308"/>
+                <stop offset="100%" style="stop-color:#facc15"/>
             </linearGradient>
         </defs>
         <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#logoGrad)"/>
@@ -32,9 +32,9 @@ $color = $attributes->get('color', 'indigo');
             <path d="M6 4C6 2.89543 6.89543 2 8 2H22C23.1046 2 24 2.89543 24 4V36C24 37.1046 23.1046 38 22 38H8C6.89543 38 6 37.1046 6 36V4Z" fill="white" fill-opacity="0.95"/>
             <path d="M16 4C16 2.89543 16.8954 2 18 2H32C33.1046 2 34 2.89543 34 4V36C34 37.1046 33.1046 38 32 38H18C16.8954 38 16 37.1046 16 36V4Z" fill="url(#logoGrad2)" fill-opacity="0.9"/>
             <path d="M16 4C16 2.89543 16.8954 2 18 2H32C33.1046 2 34 2.89543 34 4V36C34 37.1046 33.1046 38 32 38H18C16.8954 38 16 37.1046 16 36V4Z" fill="white" fill-opacity="0.3"/>
-            <line x1="10" y1="10" x2="20" y2="10" stroke="#4f46e5" stroke-width="2" stroke-linecap="round"/>
-            <line x1="10" y1="15" x2="18" y2="15" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.6"/>
-            <line x1="10" y1="19" x2="16" y2="19" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.4"/>
+            <line x1="10" y1="10" x2="20" y2="10" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
+            <line x1="10" y1="15" x2="18" y2="15" stroke="#1e40af" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.6"/>
+            <line x1="10" y1="19" x2="16" y2="19" stroke="#1e40af" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.4"/>
             <line x1="22" y1="10" x2="30" y2="10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-opacity="0.9"/>
             <line x1="22" y1="15" x2="28" y2="15" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.6"/>
             <line x1="22" y1="19" x2="26" y2="19" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.4"/>
@@ -48,7 +48,7 @@ $color = $attributes->get('color', 'indigo');
     </svg>
     @if($showText)
         <span class="font-extrabold tracking-tight {{ $size === 'sm' ? 'text-lg' : ($size === 'md' ? 'text-xl' : ($size === 'lg' ? 'text-2xl' : 'text-3xl')) }}">
-            <span class="{{ $color === 'white' ? 'text-white' : 'text-indigo-600' }}">Book</span><span class="{{ $color === 'white' ? 'text-purple-300' : 'text-purple-600' }}">Exchange</span>
+            <span class="{{ $color === 'white' ? 'text-white' : 'text-indigo-800' }}">Book</span><span class="{{ $color === 'white' ? 'text-yellow-300' : 'text-yellow-500' }}">Exchange</span>
         </span>
     @endif
 </div>

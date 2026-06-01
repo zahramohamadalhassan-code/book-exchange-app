@@ -77,24 +77,23 @@ class BookController extends Controller
             'offer_type' => 'required|in:sale,exchange,donate',
             'exchange_for' => 'required_if:offer_type,exchange|nullable|string|max:255',
             'price' => 'nullable|numeric',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'cover_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'content_description' => 'nullable|string|max:2000',
+            'payment_method' => 'nullable|string|in:cash_on_delivery',
         ]);
 
-        // رفع الصورة إذا وجدت + فحص المحتوى بالذكاء الاصطناعي
+        // رفع صورة الغلاف + فحص المحتوى بالذكاء الاصطناعي
         if ($request->hasFile('cover_image')) {
             $validated['cover_image_url'] = $request->file('cover_image')->store('books/covers', 'public');
 
             $fullPath = storage_path('app/public/' . $validated['cover_image_url']);
-            $moderation = $this->aiService->moderateImage($fullPath);
+            $details = $this->aiService->extractBookDetails($fullPath);
 
-            if (!$moderation['safe']) {
+            if (isset($details['rejected']) && $details['rejected']) {
                 @unlink($fullPath);
-                $errorMessage = $moderation['reason'] === 'محتوى غير لائق'
-                    ? __('messages.moderation.image_rejected')
-                    : ($moderation['reason'] ?: __('messages.moderation.image_rejected'));
                 return redirect()->back()
                     ->withInput()
-                    ->withErrors(['cover_image' => $errorMessage]);
+                    ->withErrors(['cover_image' => $details['reject_reason'] ?: __('messages.moderation.image_rejected')]);
             }
         }
 

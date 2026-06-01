@@ -3,20 +3,24 @@
 @section('title', __('messages.tagline') . ' - ' . __('messages.nav.home'))
 
 @section('content')
-<section class="bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 text-center">
-            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-                {{ __('messages.home.hero_title') }}
-            </h1>
-        <p class="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
+<section class="bg-gradient-to-br from-indigo-50 via-white to-gray-50 text-indigo-900 py-20 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -mr-20 -mt-20"></div>
+    <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -ml-20 -mb-20"></div>
+
+    <div class="max-w-7xl mx-auto px-4 text-center relative z-10">
+        <img src="{{ asset('st.wpu-lg.png') }}" alt="الجامعة الوطنية الخاصة" class="h-24 md:h-32 mx-auto mb-6 drop-shadow-sm">
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight text-indigo-800">
+            {{ __('messages.home.hero_title') }}
+        </h1>
+        <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             {{ __('messages.home.hero_desc') }}
         </p>
         <div class="flex flex-wrap justify-center gap-4">
-            <a href="{{ route('books.browse') }}" class="bg-white text-indigo-600 px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-50 transition shadow-lg">
+            <a href="{{ route('books.browse') }}" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-700 transition shadow-lg">
                 {{ __('messages.home.browse_books') }}
             </a>
             @guest
-            <a href="{{ route('register') }}" class="border-2 border-white text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-white/10 transition">
+            <a href="{{ route('register') }}" class="bg-yellow-500 text-indigo-900 px-8 py-3 rounded-xl font-bold text-lg hover:bg-yellow-400 transition shadow-lg">
                 {{ __('messages.home.join_now') }}
             </a>
             @endguest
@@ -32,11 +36,11 @@
                 <div class="text-gray-500 mt-1">{{ __('messages.home.books_available') }}</div>
             </div>
             <div>
-                <div class="text-3xl font-extrabold text-purple-600">{{ $stats['notes_count'] }}</div>
+                <div class="text-3xl font-extrabold text-yellow-500">{{ $stats['notes_count'] }}</div>
                 <div class="text-gray-500 mt-1">{{ __('messages.home.digital_summaries') }}</div>
             </div>
             <div>
-                <div class="text-3xl font-extrabold text-green-600">{{ $stats['users_count'] }}</div>
+                <div class="text-3xl font-extrabold text-indigo-800">{{ $stats['users_count'] }}</div>
                 <div class="text-gray-500 mt-1">{{ __('messages.home.students_registered') }}</div>
             </div>
         </div>
@@ -68,7 +72,7 @@
 <section class="py-12 bg-gray-100">
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2"><x-heroicon name="document-text" class="w-7 h-7 text-purple-600" /> {{ __('messages.home.latest_notes') }}</h2>
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2"><x-heroicon name="document-text" class="w-7 h-7 text-yellow-500" /> {{ __('messages.home.latest_notes') }}</h2>
             <a href="{{ route('notes.browse') }}" class="text-indigo-600 hover:underline font-medium">{{ __('messages.home.view_all') }} {{ app()->getLocale() === 'ar' ? '←' : '→' }}</a>
         </div>
 
@@ -87,16 +91,16 @@
     </div>
 </section>
 
-<section class="py-16 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center">
+<section class="py-16 bg-gradient-to-r from-indigo-800 to-indigo-600 text-white text-center border-t-4 border-yellow-500">
     <div class="max-w-3xl mx-auto px-4">
         <h2 class="text-3xl font-bold mb-4">{{ __('messages.home.cta_title') }}</h2>
-        <p class="text-lg text-purple-100 mb-6">{{ __('messages.home.cta_desc') }}</p>
+        <p class="text-lg text-indigo-100 mb-6">{{ __('messages.home.cta_desc') }}</p>
         @guest
-        <a href="{{ route('register') }}" class="bg-white text-indigo-600 px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-50 transition inline-block">
+        <a href="{{ route('register') }}" class="bg-yellow-500 text-indigo-900 px-8 py-3 rounded-xl font-bold text-lg hover:bg-yellow-400 transition inline-block">
             {{ __('messages.home.create_free_account') }}
         </a>
         @else
-        <a href="{{ route('student.books.create') }}" class="bg-white text-indigo-600 px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-50 transition inline-block">
+        <a href="{{ route('student.books.create') }}" class="bg-yellow-500 text-indigo-900 px-8 py-3 rounded-xl font-bold text-lg hover:bg-yellow-400 transition inline-block">
             {{ __('messages.home.add_your_book') }}
         </a>
         @endguest

@@ -58,7 +58,7 @@ class DigitalNoteController extends Controller
             'category_id' => 'required|exists:categories,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'pdf_file' => 'required|mimes:pdf|max:10000' // ملف PDF حصراً وبحجم أقصى 10 ميجا
+            'pdf_file' => 'required|mimes:pdf|max:25000'
         ]);
 
         $validated['pdf_file_url'] = $request->file('pdf_file')->store('notes/pdfs', 'public');
@@ -101,7 +101,7 @@ class DigitalNoteController extends Controller
             'category_id' => 'required|exists:categories,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'pdf_file' => 'nullable|mimes:pdf|max:10000'
+            'pdf_file' => 'nullable|mimes:pdf|max:25000'
         ]);
 
         if ($request->hasFile('pdf_file')) {

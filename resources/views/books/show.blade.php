@@ -27,6 +27,19 @@
                 <p class="text-gray-500 text-lg mb-4">{{ __('messages.books.author') }}: {{ $book->author }}</p>
             @endif
 
+            @if($book->content_description)
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
+                    <p class="text-sm font-semibold text-blue-800 mb-1">
+                        @if(app()->getLocale() === 'ar')
+                            وصف محتوى الكتاب
+                        @else
+                            Book Content Description
+                        @endif
+                    </p>
+                    <p class="text-sm text-blue-700 leading-relaxed">{{ $book->content_description }}</p>
+                </div>
+            @endif
+
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="bg-gray-50 rounded-lg p-4">
                     <p class="text-sm text-gray-500">{{ __('messages.books.condition') }}</p>
@@ -39,6 +52,15 @@
                     <p class="font-bold text-indigo-600 text-xl">
                         @if($book->offer_type === 'sale' && $book->price)
                             {{ number_format($book->price) }} SYP
+                            @if($book->payment_method === 'cash_on_delivery')
+                                <span class="text-xs font-normal text-gray-500 block mt-1">
+                                    @if(app()->getLocale() === 'ar')
+                                        الدفع نقداً عند الاستلام
+                                    @else
+                                        Cash on Delivery
+                                    @endif
+                                </span>
+                            @endif
                         @elseif($book->offer_type === 'donate')
                             {{ __('messages.books.free') }} <x-heroicon name="gift" class="w-4 h-4 inline" />
                         @else
@@ -88,6 +110,13 @@
                                             <strong>{{ __('messages.books.required_for_exchange') }}</strong> {{ $book->exchange_for ?? __('messages.student.transactions.undefined') }}
                                         </p>
                                         <p class="text-xs text-blue-600 mt-1">{{ __('messages.books.exchange_note') }}</p>
+                                    </div>
+                                @elseif($book->offer_type === 'sale')
+                                    <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <p class="text-sm text-green-800">
+                                            <strong>{{ app()->getLocale() === 'ar' ? 'طريقة الدفع:' : 'Payment Method:' }}</strong> 
+                                            {{ app()->getLocale() === 'ar' ? 'الدفع نقداً عند الاستلام' : 'Cash on Delivery' }}
+                                        </p>
                                     </div>
                                 @endif
 

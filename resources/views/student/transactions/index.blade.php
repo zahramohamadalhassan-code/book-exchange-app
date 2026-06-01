@@ -131,7 +131,14 @@
                                             
                                             <div class="mb-4">
                                                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.student.transactions.comment') }}</label>
-                                                <textarea name="comment" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="{{ __('messages.student.transactions.comment_placeholder') }}"></textarea>
+                                                <select name="comment" class="w-full border rounded-lg px-3 py-2">
+                                                    <option value="">{{ __('messages.student.transactions.no_comment') }}</option>
+                                                    <option value="ممتاز">{{ __('messages.student.transactions.excellent') }}</option>
+                                                    <option value="جيد جداً">{{ __('messages.student.transactions.very_good') }}</option>
+                                                    <option value="جيد">{{ __('messages.student.transactions.good') }}</option>
+                                                    <option value="عادي">{{ __('messages.student.transactions.acceptable') }}</option>
+                                                    <option value="سيء">{{ __('messages.student.transactions.poor') }}</option>
+                                                </select>
                                             </div>
                                             
                                             <div class="flex gap-3">
