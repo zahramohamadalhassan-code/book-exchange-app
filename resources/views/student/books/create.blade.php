@@ -252,19 +252,47 @@
                                 @endif
                             </label>
                             <select name="payment_method" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                                <option value="cash_on_delivery">
+                                <option value="cash_on_delivery" {{ old('payment_method') == 'cash_on_delivery' ? 'selected' : '' }}>
                                     @if(app()->getLocale() === 'ar')
                                         الدفع نقداً عند الاستلام
                                     @else
                                         Cash on Delivery
                                     @endif
                                 </option>
+                                <option value="syriatel_cash" {{ old('payment_method') == 'syriatel_cash' ? 'selected' : '' }}>
+                                    @if(app()->getLocale() === 'ar')
+                                        سيريتل كاش
+                                    @else
+                                        Syriatel Cash
+                                    @endif
+                                </option>
+                                <option value="mtn_cash" {{ old('payment_method') == 'mtn_cash' ? 'selected' : '' }}>
+                                    @if(app()->getLocale() === 'ar')
+                                        كاش MTN
+                                    @else
+                                        MTN Cash
+                                    @endif
+                                </option>
+                                <option value="bank_transfer" {{ old('payment_method') == 'bank_transfer' ? 'selected' : '' }}>
+                                    @if(app()->getLocale() === 'ar')
+                                        تحويل بنكي / شركة حوالات
+                                    @else
+                                        Bank Transfer / Exchange Company
+                                    @endif
+                                </option>
+                                <option value="cham_cash" {{ old('payment_method') == 'cham_cash' ? 'selected' : '' }}>
+                                    @if(app()->getLocale() === 'ar')
+                                        شام كاش
+                                    @else
+                                        Cham Cash
+                                    @endif
+                                </option>
                             </select>
                             <p class="text-xs text-gray-500 mt-1">
                                 @if(app()->getLocale() === 'ar')
-                                    الدفع يتم نقداً عند الاستلام فقط
+                                    اختر طريقة الدفع المناسبة لك
                                 @else
-                                    Payment is cash on delivery only
+                                    Choose the suitable payment method for you
                                 @endif
                             </p>
                         </div>

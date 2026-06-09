@@ -60,9 +60,66 @@
                 </div>
 
                 <div x-show="offerType === 'sale'" x-transition class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.student.books.create.price_syp') }} <span class="text-red-500">*</span></label>
-                    <input type="number" name="price" value="{{ old('price', $book->price) }}" step="0.01" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    @error('price') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.student.books.create.price_syp') }} <span class="text-red-500">*</span></label>
+                            <input type="number" name="price" value="{{ old('price', $book->price) }}" step="0.01" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            @error('price') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                @if(app()->getLocale() === 'ar')
+                                    طريقة الدفع
+                                @else
+                                    Payment Method
+                                @endif
+                            </label>
+                            <select name="payment_method" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                <option value="cash_on_delivery" {{ old('payment_method', $book->payment_method) == 'cash_on_delivery' ? 'selected' : '' }}>
+                                    @if(app()->getLocale() === 'ar')
+                                        الدفع نقداً عند الاستلام
+                                    @else
+                                        Cash on Delivery
+                                    @endif
+                                </option>
+                                <option value="syriatel_cash" {{ old('payment_method', $book->payment_method) == 'syriatel_cash' ? 'selected' : '' }}>
+                                    @if(app()->getLocale() === 'ar')
+                                        سيريتل كاش
+                                    @else
+                                        Syriatel Cash
+                                    @endif
+                                </option>
+                                <option value="mtn_cash" {{ old('payment_method', $book->payment_method) == 'mtn_cash' ? 'selected' : '' }}>
+                                    @if(app()->getLocale() === 'ar')
+                                        كاش MTN
+                                    @else
+                                        MTN Cash
+                                    @endif
+                                </option>
+                                <option value="bank_transfer" {{ old('payment_method', $book->payment_method) == 'bank_transfer' ? 'selected' : '' }}>
+                                    @if(app()->getLocale() === 'ar')
+                                        تحويل بنكي / شركة حوالات
+                                    @else
+                                        Bank Transfer / Exchange Company
+                                    @endif
+                                </option>
+                                <option value="cham_cash" {{ old('payment_method', $book->payment_method) == 'cham_cash' ? 'selected' : '' }}>
+                                    @if(app()->getLocale() === 'ar')
+                                        شام كاش
+                                    @else
+                                        Cham Cash
+                                    @endif
+                                </option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">
+                                @if(app()->getLocale() === 'ar')
+                                    اختر طريقة الدفع المناسبة لك
+                                @else
+                                    Choose the suitable payment method for you
+                                @endif
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <div x-show="offerType === 'exchange'" x-transition class="md:col-span-2">

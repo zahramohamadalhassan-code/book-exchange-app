@@ -360,9 +360,10 @@ class GeminiAiService
      * إرسال طلب إلى LiteLLM Proxy (OpenAI-compatible format)
      *
      * @param array $messages مصفوفة الرسائل بتنسيق OpenAI
+     * @param int $timeout وقت الانتظار بالثواني
      * @return array|null الاستجابة المحللة أو null عند الفشل
      */
-    private function sendRequest(array $messages): ?array
+    private function sendRequest(array $messages, int $timeout = 60): ?array
     {
         $payload = [
             'model'       => $this->model,
@@ -376,7 +377,7 @@ class GeminiAiService
             'model' => $this->model,
         ]);
 
-        $response = Http::timeout(60)
+        $response = Http::timeout($timeout)
             ->retry(3, 2000)
             ->withHeaders([
                 'Content-Type'       => 'application/json',
@@ -401,7 +402,7 @@ class GeminiAiService
      * تحليل محتوى ملف PDF لاستخراج وصف المحتوى
      * لا يتم تخزين الملف، فقط تحليله واستخراج الوصف
      */
-    public function analyzePdfContent(string $pdfPath): array
+    public function analyzePdfContent(string $pdfPath, string $originalName = ''): array
     {
         if (empty($this->apiKey) || empty($this->apiUrl)) {
             return ['description' => ''];
@@ -416,6 +417,81 @@ class GeminiAiService
             $cleanText = trim(preg_replace('/\s+/', ' ', $cleanText));
 
             if (empty($cleanText) || mb_strlen($cleanText) < 20) {
+                // Fallback: If text extraction fails, use FPDI to extract the first 3 pages and send the PDF to AI
+                if (class_exists(\setasign\Fpdi\Fpdi::class)) {
+                    try {
+                        $fpdi = new \setasign\Fpdi\Fpdi();
+                        $pageCount = $fpdi->setSourceFile($pdfPath);
+                        $pagesToExtract = min(3, $pageCount);
+                        
+                        for ($pageNo = 1; $pageNo <= $pagesToExtract; $pageNo++) {
+                            $templateId = $fpdi->importPage($pageNo);
+                            $size = $fpdi->getTemplateSize($templateId);
+                            $orientation = $size['width'] > $size['height'] ? 'L' : 'P';
+                            
+                            $fpdi->AddPage($orientation, [$size['width'], $size['height']]);
+                            $fpdi->useTemplate($templateId);
+                        }
+                        
+                        $tinyPdfContent = $fpdi->Output('S');
+                        $pdfData = base64_encode($tinyPdfContent);
+                        
+                        $response = $this->sendRequest([
+                            [
+                                'role' => 'user',
+                                'content' => [
+                                    [
+                                        'type' => 'text',
+                                        'text' => 'أنت خبير أكاديمي. يرجى تحليل هذه الصفحات الأولى من الملف (والتي قد تكون نصوص أو صور ممسوحة ضوئياً) واستخراج وصف دقيق وعام لمحتوى هذا الكتاب أو المحاضرة، يتضمن المواضيع الأساسية المذكورة بحد أقصى 300 حرف. أجب بتنسيق JSON فقط: {"description": "..."}'
+                                    ],
+                                    [
+                                        'type' => 'image_url',
+                                        'image_url' => [
+                                            'url' => "data:application/pdf;base64,{$pdfData}"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ], 120);
+
+                        if ($response && isset($response['choices'][0]['message']['content'])) {
+                            $textResp = $response['choices'][0]['message']['content'];
+                            $textResp = preg_replace('/```json\s*/', '', $textResp);
+                            $textResp = preg_replace('/```\s*/', '', $textResp);
+                            $textResp = trim($textResp);
+
+                            $data = json_decode($textResp, true);
+                            if (isset($data['description'])) {
+                                return ['description' => $data['description']];
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('AI Service Error (analyzePdfContent FPDI): ' . $e->getMessage());
+                    }
+                }
+
+                // Final fallback using Original File Name
+                if (!empty($originalName)) {
+                    $nameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
+                    $response = $this->sendRequest([
+                        [
+                            'role' => 'user',
+                            'content' => "أنت خبير أكاديمي. لم نتمكن من قراءة محتوى الملف، لكن اسم الملف هو: '{$nameWithoutExt}'. بناءً على هذا الاسم، اكتب وصفاً عاماً ومتوقعاً لمحتوى هذا الكتاب أو المحاضرة، بحد أقصى 300 حرف. أجب بتنسيق JSON فقط: {\"description\": \"...\"}"
+                        ]
+                    ], 60);
+
+                    if ($response && isset($response['choices'][0]['message']['content'])) {
+                        $textResp = $response['choices'][0]['message']['content'];
+                        $textResp = preg_replace('/```json\s*/', '', $textResp);
+                        $textResp = preg_replace('/```\s*/', '', $textResp);
+                        $textResp = trim($textResp);
+
+                        $data = json_decode($textResp, true);
+                        if (isset($data['description'])) {
+                            return ['description' => $data['description']];
+                        }
+                    }
+                }
                 return ['description' => ''];
             }
 

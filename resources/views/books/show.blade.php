@@ -52,12 +52,18 @@
                     <p class="font-bold text-indigo-600 text-xl">
                         @if($book->offer_type === 'sale' && $book->price)
                             {{ number_format($book->price) }} SYP
-                            @if($book->payment_method === 'cash_on_delivery')
+                            @if($book->payment_method)
                                 <span class="text-xs font-normal text-gray-500 block mt-1">
-                                    @if(app()->getLocale() === 'ar')
-                                        الدفع نقداً عند الاستلام
-                                    @else
-                                        Cash on Delivery
+                                    @if($book->payment_method === 'cash_on_delivery')
+                                        {{ app()->getLocale() === 'ar' ? 'الدفع نقداً عند الاستلام' : 'Cash on Delivery' }}
+                                    @elseif($book->payment_method === 'syriatel_cash')
+                                        {{ app()->getLocale() === 'ar' ? 'سيريتل كاش' : 'Syriatel Cash' }}
+                                    @elseif($book->payment_method === 'mtn_cash')
+                                        {{ app()->getLocale() === 'ar' ? 'كاش MTN' : 'MTN Cash' }}
+                                    @elseif($book->payment_method === 'bank_transfer')
+                                        {{ app()->getLocale() === 'ar' ? 'تحويل بنكي / شركة حوالات' : 'Bank Transfer / Exchange Company' }}
+                                    @elseif($book->payment_method === 'cham_cash')
+                                        {{ app()->getLocale() === 'ar' ? 'شام كاش' : 'Cham Cash' }}
                                     @endif
                                 </span>
                             @endif
@@ -115,7 +121,19 @@
                                     <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                                         <p class="text-sm text-green-800">
                                             <strong>{{ app()->getLocale() === 'ar' ? 'طريقة الدفع:' : 'Payment Method:' }}</strong> 
-                                            {{ app()->getLocale() === 'ar' ? 'الدفع نقداً عند الاستلام' : 'Cash on Delivery' }}
+                                            @if($book->payment_method === 'cash_on_delivery')
+                                                {{ app()->getLocale() === 'ar' ? 'الدفع نقداً عند الاستلام' : 'Cash on Delivery' }}
+                                            @elseif($book->payment_method === 'syriatel_cash')
+                                                {{ app()->getLocale() === 'ar' ? 'سيريتل كاش' : 'Syriatel Cash' }}
+                                            @elseif($book->payment_method === 'mtn_cash')
+                                                {{ app()->getLocale() === 'ar' ? 'كاش MTN' : 'MTN Cash' }}
+                                            @elseif($book->payment_method === 'bank_transfer')
+                                                {{ app()->getLocale() === 'ar' ? 'تحويل بنكي / شركة حوالات' : 'Bank Transfer / Exchange Company' }}
+                                            @elseif($book->payment_method === 'cham_cash')
+                                                {{ app()->getLocale() === 'ar' ? 'شام كاش' : 'Cham Cash' }}
+                                            @else
+                                                {{ app()->getLocale() === 'ar' ? 'غير محدد' : 'Not specified' }}
+                                            @endif
                                         </p>
                                     </div>
                                 @endif

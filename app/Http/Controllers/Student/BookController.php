@@ -79,7 +79,7 @@ class BookController extends Controller
             'price' => 'nullable|numeric',
             'cover_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'content_description' => 'nullable|string|max:2000',
-            'payment_method' => 'nullable|string|in:cash_on_delivery',
+            'payment_method' => 'nullable|string|in:cash_on_delivery,syriatel_cash,mtn_cash,bank_transfer,cham_cash',
         ]);
 
         // رفع صورة الغلاف + فحص المحتوى بالذكاء الاصطناعي
@@ -124,6 +124,7 @@ class BookController extends Controller
             'offer_type' => 'required|in:sale,exchange,donate',
             'exchange_for' => 'required_if:offer_type,exchange|nullable|string|max:255',
             'price' => 'nullable|numeric',
+            'payment_method' => 'nullable|string|in:cash_on_delivery,syriatel_cash,mtn_cash,bank_transfer,cham_cash',
             'status' => 'required|in:available,pending,sold'
         ]);
 

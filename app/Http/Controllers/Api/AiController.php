@@ -106,14 +106,17 @@ class AiController extends Controller
 
     public function analyzePdfContent(Request $request, GeminiAiService $aiService)
     {
+        set_time_limit(180);
+
         $request->validate([
             'pdf_file' => 'required|mimes:pdf|max:25000',
         ]);
 
         $path = $request->file('pdf_file')->store('temp/pdfs', 'public');
         $fullPath = storage_path('app/public/' . $path);
+        $originalName = $request->file('pdf_file')->getClientOriginalName();
 
-        $result = $aiService->analyzePdfContent($fullPath);
+        $result = $aiService->analyzePdfContent($fullPath, $originalName);
 
         @unlink($fullPath);
 
