@@ -106,46 +106,92 @@
                         @endphp
                         
                         @if(!$hasRated)
-                            <div x-data="{ showRatingModal: false }">
-                                <button @click="showRatingModal = true" class="bg-yellow-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-yellow-600">
+                            <div x-data="{ 
+                                showRatingModal: false, 
+                                stars: '5',
+                                get autoComment() {
+                                    if(this.stars == '5') return 'ممتاز';
+                                    if(this.stars == '4') return 'جيد جداً';
+                                    if(this.stars == '3') return 'جيد';
+                                    if(this.stars == '2') return 'عادي';
+                                    return 'سيء';
+                                }
+                            }">
+                                <button @click="showRatingModal = true" class="bg-yellow-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-yellow-600 transition-all duration-200">
                                     <x-heroicon name="star" class="w-4 h-4 inline" /> {{ __('messages.student.transactions.rate') }}
                                 </button>
                                 
-                                <div x-show="showRatingModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showRatingModal = false">
-                                    <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
-                                        <h3 class="text-xl font-bold mb-4">{{ __('messages.student.transactions.rate_heading') }}</h3>
-                                        <form method="POST" action="{{ route('student.ratings.store') }}">
-                                            @csrf
-                                            <input type="hidden" name="transaction_id" value="{{ $transaction->id }}">
-                                            
-                                            <div class="mb-4">
-                                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.student.transactions.stars') }} <span class="text-red-500">*</span></label>
-                                                <select name="stars" required class="w-full border rounded-lg px-3 py-2">
-                                                    <option value="5">⭐⭐⭐⭐⭐ {{ __('messages.student.transactions.excellent') }}</option>
-                                                    <option value="4">⭐⭐⭐⭐ {{ __('messages.student.transactions.very_good') }}</option>
-                                                    <option value="3">⭐⭐⭐ {{ __('messages.student.transactions.good') }}</option>
-                                                    <option value="2">⭐⭐ {{ __('messages.student.transactions.acceptable') }}</option>
-                                                    <option value="1">⭐ {{ __('messages.student.transactions.poor') }}</option>
-                                                </select>
+                                {{-- Rating Modal --}}
+                                <div x-show="showRatingModal" 
+                                     @keydown.escape.window="showRatingModal = false"
+                                     class="fixed inset-0 z-50 overflow-y-auto" 
+                                     style="display: none;">
+                                    <div class="flex items-center justify-center min-h-screen px-4 py-6">
+                                        {{-- Backdrop --}}
+                                        <div x-show="showRatingModal"
+                                             x-transition:enter="ease-out duration-300"
+                                             x-transition:enter-start="opacity-0"
+                                             x-transition:enter-end="opacity-100"
+                                             x-transition:leave="ease-in duration-200"
+                                             x-transition:leave-start="opacity-100"
+                                             x-transition:leave-end="opacity-0"
+                                             class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
+                                             @click="showRatingModal = false"></div>
+
+                                        {{-- Panel --}}
+                                        <div x-show="showRatingModal"
+                                             x-transition:enter="ease-out duration-300"
+                                             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                                             x-transition:leave="ease-in duration-200"
+                                             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                                             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                             class="relative bg-white rounded-2xl shadow-2xl w-full sm:max-w-md p-6 z-10 border border-gray-100"
+                                             @click.stop>
+
+                                            {{-- Header --}}
+                                            <div class="flex items-center justify-between mb-5">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center">
+                                                        <x-heroicon name="star" class="w-5 h-5" />
+                                                    </div>
+                                                    <h3 class="text-lg font-bold text-gray-900">{{ __('messages.student.transactions.rate_heading') }}</h3>
+                                                </div>
+                                                <button @click="showRatingModal = false" 
+                                                        class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-1.5 transition-all duration-200 hover:rotate-90">
+                                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                </button>
                                             </div>
-                                            
-                                            <div class="mb-4">
-                                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.student.transactions.comment') }}</label>
-                                                <select name="comment" class="w-full border rounded-lg px-3 py-2">
-                                                    <option value="">{{ __('messages.student.transactions.no_comment') }}</option>
-                                                    <option value="ممتاز">{{ __('messages.student.transactions.excellent') }}</option>
-                                                    <option value="جيد جداً">{{ __('messages.student.transactions.very_good') }}</option>
-                                                    <option value="جيد">{{ __('messages.student.transactions.good') }}</option>
-                                                    <option value="عادي">{{ __('messages.student.transactions.acceptable') }}</option>
-                                                    <option value="سيء">{{ __('messages.student.transactions.poor') }}</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div class="flex gap-3">
-                                                <button type="submit" class="flex-1 bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 font-medium">{{ __('messages.student.transactions.submit_rating') }}</button>
-                                                <button type="button" @click="showRatingModal = false" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 font-medium">{{ __('messages.books.cancel') }}</button>
-                                            </div>
-                                        </form>
+
+                                            <form method="POST" action="{{ route('student.ratings.store') }}">
+                                                @csrf
+                                                <input type="hidden" name="transaction_id" value="{{ $transaction->id }}">
+                                                
+                                                <div class="mb-4">
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.student.transactions.stars') }} <span class="text-red-500">*</span></label>
+                                                    <select name="stars" x-model="stars" required class="w-full border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition">
+                                                        <option value="5">⭐⭐⭐⭐⭐ {{ __('messages.student.transactions.excellent') }}</option>
+                                                        <option value="4">⭐⭐⭐⭐ {{ __('messages.student.transactions.very_good') }}</option>
+                                                        <option value="3">⭐⭐⭐ {{ __('messages.student.transactions.good') }}</option>
+                                                        <option value="2">⭐⭐ {{ __('messages.student.transactions.acceptable') }}</option>
+                                                        <option value="1">⭐ {{ __('messages.student.transactions.poor') }}</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="mb-5">
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.student.transactions.comment') }}</label>
+                                                    <input type="text" :value="autoComment" disabled class="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-gray-600 font-medium">
+                                                    <input type="hidden" name="comment" :value="autoComment">
+                                                </div>
+                                                
+                                                <div class="flex gap-3">
+                                                    <button type="submit" class="flex-1 bg-yellow-500 text-white py-2.5 rounded-xl hover:bg-yellow-600 font-medium transition-all duration-200 hover:shadow-lg hover:shadow-yellow-200">{{ __('messages.student.transactions.submit_rating') }}</button>
+                                                    <button type="button" @click="showRatingModal = false" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl hover:bg-gray-200 font-medium transition-all duration-200">{{ __('messages.books.cancel') }}</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -2,7 +2,7 @@
 @section('title', __('messages.student.ratings.title') . ' - ' . __('messages.app_name'))
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-8" x-data="{ deleteModalOpen: false, deleteUrl: '', itemTitle: '' }">
     <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2"><x-heroicon name="star" class="w-8 h-8 text-yellow-500" /> {{ __('messages.student.ratings.title') }}</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -43,10 +43,11 @@
                                     {{ $i <= $rating->stars ? '&#9733;' : '&#9734;' }}
                                 @endfor
                             </span>
-                            <form method="POST" action="{{ route('student.ratings.destroy', $rating) }}" onsubmit="return confirm('{{ __('messages.student.ratings.delete_rating') }}')">
-                                @csrf @method('DELETE')
-                                <button class="text-red-400 hover:text-red-600 text-sm flex items-center gap-1"><x-heroicon name="trash" class="w-4 h-4" /></button>
-                            </form>
+                            <button type="button" 
+                                    @click="deleteModalOpen = true; deleteUrl = '{{ route('student.ratings.destroy', $rating) }}'; itemTitle = '{{ addslashes($rating->comment ?? __('messages.student.ratings.title')) }}'"
+                                    class="text-red-400 hover:text-red-600 text-sm flex items-center gap-1 hover:bg-red-50 p-1 rounded-lg transition-all duration-200">
+                                <x-heroicon name="trash" class="w-4 h-4" />
+                            </button>
                         </div>
                     </div>
                     @if($rating->comment)
@@ -59,5 +60,8 @@
             @endif
         </div>
     </div>
+
+    {{-- Delete Confirmation Modal --}}
+    <x-confirm-delete-modal />
 </div>
 @endsection

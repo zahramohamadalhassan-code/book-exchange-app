@@ -2,7 +2,7 @@
 @section('title', __('messages.student.favorites.title') . ' - ' . __('messages.app_name'))
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-8" x-data="{ deleteModalOpen: false, deleteUrl: '', itemTitle: '' }">
     <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2"><x-heroicon name="heart" class="w-8 h-8 text-red-500" /> {{ __('messages.student.favorites.title') }}</h1>
 
     @if($favorites->count() > 0)
@@ -20,10 +20,12 @@
                     </p>
                 </div>
             </a>
-            <form method="POST" action="{{ route('student.favorites.destroy', $fav) }}" class="ms-4">
-                @csrf @method('DELETE')
-                <button class="text-red-400 hover:text-red-600 transition" title="{{ __('messages.student.favorites.remove') }}"><x-heroicon name="trash" class="w-5 h-5" /></button>
-            </form>
+            <button type="button" 
+                    @click="deleteModalOpen = true; deleteUrl = '{{ route('student.favorites.destroy', $fav) }}'; itemTitle = '{{ addslashes($fav->favoritable?->title ?? __('messages.student.favorites.deleted_item')) }}'"
+                    class="ms-4 text-red-400 hover:text-red-600 transition hover:bg-red-50 p-1.5 rounded-lg" 
+                    title="{{ __('messages.student.favorites.remove') }}">
+                <x-heroicon name="trash" class="w-5 h-5" />
+            </button>
         </div>
         @endforeach
     </div>
@@ -34,5 +36,8 @@
         <a href="{{ route('books.browse') }}" class="text-indigo-600 hover:underline mt-2 inline-block">{{ __('messages.student.favorites.browse_books') }}</a>
     </div>
     @endif
+
+    {{-- Delete Confirmation Modal --}}
+    <x-confirm-delete-modal />
 </div>
 @endsection

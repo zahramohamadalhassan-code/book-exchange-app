@@ -16,22 +16,22 @@ class RatingSeeder extends Seeder
             return;
         }
 
-        $comments = [
-            'التعامل ممتاز والكتاب بحالة جيدة جداً، شكراً لك.',
-            'شخص محترم وسريع في الاستجابة.',
-            'الكتاب كما في الوصف تماماً، تجربة رائعة.',
-            'شكراً على الكتاب، أنصح بالتعامل معه.',
-            'التعامل كان جيداً ولكن تأخر قليلاً في الرد.',
-            'الكتاب فيه بعض الملاحظات ولكن السعر مناسب.',
+        $commentMap = [
+            5 => 'ممتاز',
+            4 => 'جيد جداً',
+            3 => 'جيد',
+            2 => 'عادي',
+            1 => 'سيء',
         ];
 
         foreach ($completedTransactions as $transaction) {
+            $stars = rand(1, 5); // تقييمات من 1 إلى 5
             Rating::create([
                 'transaction_id' => $transaction->id,
                 'reviewer_id' => $transaction->requester_id,
                 'reviewed_user_id' => $transaction->owner_id,
-                'stars' => rand(3, 5), // تقييمات إيجابية إجمالاً بين 3 و 5
-                'comment' => $comments[array_rand($comments)],
+                'stars' => $stars,
+                'comment' => $commentMap[$stars],
             ]);
         }
     }

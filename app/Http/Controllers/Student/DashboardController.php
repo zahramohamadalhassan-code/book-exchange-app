@@ -20,6 +20,11 @@ class DashboardController extends Controller
                                                   ->where('status', 'pending')
                                                   ->count();
 
-        return view('student.dashboard', compact('booksCount', 'notesCount', 'pendingRequests'));
+        // الطلبات التي قدمها الطالب وما زالت قيد الانتظار
+        $sentPendingRequests = \App\Models\Transaction::where('requester_id', $user->id)
+                                                      ->where('status', 'pending')
+                                                      ->count();
+
+        return view('student.dashboard', compact('booksCount', 'notesCount', 'pendingRequests', 'sentPendingRequests'));
     }
 }

@@ -6,8 +6,8 @@
     <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ __('messages.student.welcome') }} {{ auth()->user()->full_name }}</h1>
     <p class="text-gray-500 mb-8">{{ __('messages.student.overview_desc') }}</p>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm border p-6 flex items-center gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border p-6 flex items-center gap-4 hover:shadow-md transition">
             <div class="bg-indigo-100 text-indigo-600 p-3 rounded-xl">
                 <x-heroicon name="book-open" class="w-7 h-7" />
             </div>
@@ -16,7 +16,7 @@
                 <p class="text-gray-500 text-sm">{{ __('messages.student.my_published_books') }}</p>
             </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border p-6 flex items-center gap-4">
+        <div class="bg-white rounded-xl shadow-sm border p-6 flex items-center gap-4 hover:shadow-md transition">
             <div class="bg-purple-100 text-purple-600 p-3 rounded-xl">
                 <x-heroicon name="document-text" class="w-7 h-7" />
             </div>
@@ -25,18 +25,27 @@
                 <p class="text-gray-500 text-sm">{{ __('messages.student.my_summaries') }}</p>
             </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border p-6 flex items-center gap-4">
+        <div class="bg-white rounded-xl shadow-sm border p-6 flex items-center gap-4 hover:shadow-md transition">
             <div class="bg-orange-100 text-orange-600 p-3 rounded-xl">
-                <x-heroicon name="clock" class="w-7 h-7" />
+                <x-heroicon name="inbox-arrow-down" class="w-7 h-7" />
             </div>
             <div>
                 <p class="text-2xl font-bold text-gray-800">{{ $pendingRequests }}</p>
-                <p class="text-gray-500 text-sm">{{ __('messages.student.pending_requests') }}</p>
+                <p class="text-gray-500 text-sm">{{ app()->getLocale() === 'ar' ? 'طلبات واردة معلقة' : 'Pending Incoming Requests' }}</p>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border p-6 flex items-center gap-4 hover:shadow-md transition">
+            <div class="bg-blue-100 text-blue-600 p-3 rounded-xl">
+                <x-heroicon name="paper-airplane" class="w-7 h-7" />
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-800">{{ $sentPendingRequests }}</p>
+                <p class="text-gray-500 text-sm">{{ app()->getLocale() === 'ar' ? 'طلباتي المعلقة' : 'My Pending Requests' }}</p>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <a href="{{ route('student.books.index') }}" class="bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition text-center group">
             <div class="inline-flex items-center justify-center bg-indigo-100 text-indigo-600 p-3 rounded-xl mb-3 group-hover:scale-110 transition-transform">
                 <x-heroicon name="book-open" class="w-8 h-8" />
@@ -64,6 +73,13 @@
             </div>
             <p class="font-bold text-gray-800">{{ __('messages.student.my_favorites') }}</p>
             <p class="text-sm text-gray-500">{{ __('messages.student.my_favorites_desc') }}</p>
+        </a>
+        <a href="{{ route('student.ratings.index') }}" class="bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition text-center group">
+            <div class="inline-flex items-center justify-center bg-yellow-100 text-yellow-500 p-3 rounded-xl mb-3 group-hover:scale-110 transition-transform">
+                <x-heroicon name="star" class="w-8 h-8" />
+            </div>
+            <p class="font-bold text-gray-800">{{ __('messages.student.ratings.title') }}</p>
+            <p class="text-sm text-gray-500">{{ __('messages.users.comments_and_ratings') }}</p>
         </a>
     </div>
 </div>

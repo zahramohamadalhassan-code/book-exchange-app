@@ -103,59 +103,101 @@
                         <x-heroicon name="paper-airplane" class="w-5 h-5" /> {{ __('messages.books.request_book') }}
                     </button>
 
-                    <div x-show="showModal" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showModal = false">
-                        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
-                            <h3 class="text-xl font-bold mb-4">{{ __('messages.books.request_heading') }} {{ $book->title }}</h3>
-                            <form method="POST" action="{{ route('student.transactions.store') }}">
-                                @csrf
-                                <input type="hidden" name="book_id" value="{{ $book->id }}">
+                    {{-- Book Request Modal --}}
+                    <div x-show="showModal" 
+                         @keydown.escape.window="showModal = false"
+                         class="fixed inset-0 z-50 overflow-y-auto" 
+                         style="display: none;">
+                        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+                            {{-- Backdrop --}}
+                            <div x-show="showModal"
+                                 x-transition:enter="ease-out duration-300"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="ease-in duration-200"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
+                                 @click="showModal = false"></div>
 
-                                @if($book->offer_type === 'exchange')
-                                    <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                        <p class="text-sm text-blue-800">
-                                            <strong>{{ __('messages.books.required_for_exchange') }}</strong> {{ $book->exchange_for ?? __('messages.student.transactions.undefined') }}
-                                        </p>
-                                        <p class="text-xs text-blue-600 mt-1">{{ __('messages.books.exchange_note') }}</p>
+                            {{-- Panel --}}
+                            <div x-show="showModal"
+                                 x-transition:enter="ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                                 x-transition:leave="ease-in duration-200"
+                                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                 class="relative bg-white rounded-2xl shadow-2xl w-full sm:max-w-md p-6 z-10 border border-gray-100"
+                                 @click.stop>
+
+                                {{-- Header --}}
+                                <div class="flex items-center justify-between mb-5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                            <x-heroicon name="paper-airplane" class="w-5 h-5" />
+                                        </div>
+                                        <h3 class="text-lg font-bold text-gray-900">{{ __('messages.books.request_heading') }} {{ $book->title }}</h3>
                                     </div>
-                                @elseif($book->offer_type === 'sale')
-                                    <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                        <p class="text-sm text-green-800">
-                                            <strong>{{ app()->getLocale() === 'ar' ? 'طريقة الدفع:' : 'Payment Method:' }}</strong> 
-                                            @if($book->payment_method === 'cash_on_delivery')
-                                                {{ app()->getLocale() === 'ar' ? 'الدفع نقداً عند الاستلام' : 'Cash on Delivery' }}
-                                            @elseif($book->payment_method === 'syriatel_cash')
-                                                {{ app()->getLocale() === 'ar' ? 'سيريتل كاش' : 'Syriatel Cash' }}
-                                            @elseif($book->payment_method === 'mtn_cash')
-                                                {{ app()->getLocale() === 'ar' ? 'كاش MTN' : 'MTN Cash' }}
-                                            @elseif($book->payment_method === 'bank_transfer')
-                                                {{ app()->getLocale() === 'ar' ? 'تحويل بنكي / شركة حوالات' : 'Bank Transfer / Exchange Company' }}
-                                            @elseif($book->payment_method === 'cham_cash')
-                                                {{ app()->getLocale() === 'ar' ? 'شام كاش' : 'Cham Cash' }}
-                                            @else
-                                                {{ app()->getLocale() === 'ar' ? 'غير محدد' : 'Not specified' }}
-                                            @endif
-                                        </p>
+                                    <button @click="showModal = false" 
+                                            class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-1.5 transition-all duration-200 hover:rotate-90">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <form method="POST" action="{{ route('student.transactions.store') }}">
+                                    @csrf
+                                    <input type="hidden" name="book_id" value="{{ $book->id }}">
+
+                                    @if($book->offer_type === 'exchange')
+                                        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                                            <p class="text-sm text-blue-800">
+                                                <strong>{{ __('messages.books.required_for_exchange') }}</strong> {{ $book->exchange_for ?? __('messages.student.transactions.undefined') }}
+                                            </p>
+                                            <p class="text-xs text-blue-600 mt-1">{{ __('messages.books.exchange_note') }}</p>
+                                        </div>
+                                    @elseif($book->offer_type === 'sale')
+                                        <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl">
+                                            <p class="text-sm text-green-800">
+                                                <strong>{{ app()->getLocale() === 'ar' ? 'طريقة الدفع:' : 'Payment Method:' }}</strong> 
+                                                @if($book->payment_method === 'cash_on_delivery')
+                                                    {{ app()->getLocale() === 'ar' ? 'الدفع نقداً عند الاستلام' : 'Cash on Delivery' }}
+                                                @elseif($book->payment_method === 'syriatel_cash')
+                                                    {{ app()->getLocale() === 'ar' ? 'سيريتل كاش' : 'Syriatel Cash' }}
+                                                @elseif($book->payment_method === 'mtn_cash')
+                                                    {{ app()->getLocale() === 'ar' ? 'كاش MTN' : 'MTN Cash' }}
+                                                @elseif($book->payment_method === 'bank_transfer')
+                                                    {{ app()->getLocale() === 'ar' ? 'تحويل بنكي / شركة حوالات' : 'Bank Transfer / Exchange Company' }}
+                                                @elseif($book->payment_method === 'cham_cash')
+                                                    {{ app()->getLocale() === 'ar' ? 'شام كاش' : 'Cham Cash' }}
+                                                @else
+                                                    {{ app()->getLocale() === 'ar' ? 'غير محدد' : 'Not specified' }}
+                                                @endif
+                                            </p>
+                                        </div>
+                                    @endif
+
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.books.meeting_date') }}</label>
+                                        <input type="date" name="meeting_date" class="w-full border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                                     </div>
-                                @endif
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.books.meeting_time') }}</label>
+                                        <input type="time" name="meeting_time" class="w-full border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                    </div>
+                                    <div class="mb-5">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.books.meeting_location') }}</label>
+                                        <input type="text" name="meeting_location" placeholder="{{ __('messages.books.meeting_location_placeholder') }}" class="w-full border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                    </div>
 
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.books.meeting_date') }}</label>
-                                    <input type="date" name="meeting_date" class="w-full border rounded-lg px-3 py-2">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.books.meeting_time') }}</label>
-                                    <input type="time" name="meeting_time" class="w-full border rounded-lg px-3 py-2">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.books.meeting_location') }}</label>
-                                    <input type="text" name="meeting_location" placeholder="{{ __('messages.books.meeting_location_placeholder') }}" class="w-full border rounded-lg px-3 py-2">
-                                </div>
-
-                                <div class="flex gap-3">
-                                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-medium">{{ __('messages.books.send_request') }}</button>
-                                    <button type="button" @click="showModal = false" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 font-medium">{{ __('messages.books.cancel') }}</button>
-                                </div>
-                            </form>
+                                    <div class="flex gap-3">
+                                        <button type="submit" class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl hover:bg-indigo-700 font-medium transition-all duration-200 hover:shadow-lg hover:shadow-indigo-200">{{ __('messages.books.send_request') }}</button>
+                                        <button type="button" @click="showModal = false" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl hover:bg-gray-200 font-medium transition-all duration-200">{{ __('messages.books.cancel') }}</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
