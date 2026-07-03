@@ -41,6 +41,19 @@
     @if($transactions->count() > 0)
     <div class="space-y-4">
         @foreach($transactions as $transaction)
+        @php
+            $book = $transaction->book;
+            $isAr = app()->getLocale() === 'ar';
+            $paymentLabels = [
+                'cash_on_delivery' => $isAr ? 'الدفع نقداً عند الاستلام' : 'Cash on Delivery',
+                'syriatel_cash'   => $isAr ? 'سيريتل كاش' : 'Syriatel Cash',
+                'mtn_cash'        => $isAr ? 'كاش MTN' : 'MTN Cash',
+                'bank_transfer'   => $isAr ? 'تحويل بنكي / شركة حوالات' : 'Bank Transfer / Exchange Company',
+                'cham_cash'       => $isAr ? 'شام كاش' : 'Cham Cash',
+            ];
+            $paymentLabel = $book && $book->payment_method ? ($paymentLabels[$book->payment_method] ?? $book->payment_method) : null;
+            $offerTypeLabel = $book ? ($book->offer_type === 'sale' ? __('messages.offer_types.sale') : ($book->offer_type === 'exchange' ? __('messages.offer_types.exchange') : __('messages.offer_types.donate'))) : null;
+        @endphp
         <div class="bg-white rounded-xl shadow-sm border p-5">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
@@ -54,18 +67,55 @@
                                 <span class="text-green-600">{{ __('messages.student.transactions.outgoing_request') }}</span> {{ __('messages.student.transactions.to') }}: {{ $transaction->owner?->full_name }}
                             @endif
                         </p>
-                        @if($transaction->book && $transaction->book->offer_type === 'exchange')
-                            <div class="mt-2 bg-purple-50 border border-purple-100 rounded p-2 text-sm text-purple-700">
-                                <x-heroicon name="arrow-path" class="w-4 h-4 inline" /> <strong>{{ __('messages.student.transactions.required_for_swap') }}</strong> {{ $transaction->book->exchange_for ?? __('messages.student.transactions.undefined') }}
-                            </div>
-                        @endif
 
-                        @if($transaction->meeting_date)
-                            <p class="text-xs text-gray-400 mt-2 flex items-center gap-1.5"><x-heroicon name="calendar" class="w-3.5 h-3.5" /> {{ $transaction->meeting_date->format('Y-m-d') }}
-                                @if($transaction->meeting_time) @if(app()->getLocale() === 'ar') في @else at @endif {{ $transaction->meeting_time }} @endif
-                                @if($transaction->meeting_location) | <x-heroicon name="map-pin" class="w-3.5 h-3.5" /> {{ $transaction->meeting_location }} @endif
+                        {{-- قسم التفاصيل: يظهر دائماً لكل الطلبات بكل الحالات --}}
+                        <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                            @if($offerTypeLabel)
+                                <div class="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                                    <span class="text-gray-400"><x-heroicon name="tag" class="w-4 h-4" /></span>
+                                    <span class="text-gray-500">{{ __('messages.student.transactions.offer_type') }}:</span>
+                                    <span class="font-semibold text-gray-800">{{ $offerTypeLabel }}</span>
+                                </div>
+                            @endif
+
+                            @if($book && $book->offer_type === 'sale')
+                                <div class="flex items-center gap-2 bg-green-50 rounded-lg px-3 py-2">
+                                    <span class="text-green-500"><x-heroicon name="currency-dollar" class="w-4 h-4" /></span>
+                                    <span class="text-gray-500">{{ __('messages.student.transactions.price') }}:</span>
+                                    <span class="font-semibold text-green-700">{{ $book->price ? number_format($book->price) . ' SYP' : __('messages.student.transactions.undefined') }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 bg-green-50 rounded-lg px-3 py-2">
+                                    <span class="text-green-500"><x-heroicon name="currency-dollar" class="w-4 h-4" /></span>
+                                    <span class="text-gray-500">{{ __('messages.student.transactions.payment_method') }}:</span>
+                                    <span class="font-semibold text-green-700">{{ $paymentLabel ?? __('messages.student.transactions.payment_not_specified') }}</span>
+                                </div>
+                            @endif
+
+                            @if($book && $book->offer_type === 'exchange')
+                                <div class="flex items-center gap-2 bg-purple-50 rounded-lg px-3 py-2 sm:col-span-2">
+                                    <span class="text-purple-500"><x-heroicon name="arrow-path" class="w-4 h-4" /></span>
+                                    <span class="text-gray-500">{{ __('messages.student.transactions.required_for_swap') }}</span>
+                                    <span class="font-semibold text-purple-700">{{ $book->exchange_for ?? __('messages.student.transactions.undefined') }}</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- تفاصيل اللقاء: تظهر دائماً، مع نص بديل عند الغياب --}}
+                        <div class="mt-2 bg-indigo-50 border border-indigo-100 rounded-lg p-3">
+                            <p class="text-sm font-semibold text-indigo-800 flex items-center gap-1.5 mb-2">
+                                <x-heroicon name="map-pin" class="w-4 h-4" />
+                                {{ __('messages.student.transactions.meeting_details') }}
                             </p>
-                        @endif
+                            @if($transaction->meeting_date || $transaction->meeting_time || $transaction->meeting_location)
+                                <div class="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-indigo-700">
+                                    <span class="inline-flex items-center gap-1.5"><x-heroicon name="calendar" class="w-4 h-4" /> {{ $transaction->meeting_date ? $transaction->meeting_date->format('Y-m-d') : __('messages.student.transactions.undefined') }}</span>
+                                    <span class="inline-flex items-center gap-1.5"><x-heroicon name="clock" class="w-4 h-4" /> {{ $transaction->meeting_time ? $transaction->meeting_time->format('H:i') : __('messages.student.transactions.undefined') }}</span>
+                                    <span class="inline-flex items-center gap-1.5"><x-heroicon name="map-pin" class="w-4 h-4" /> {{ $transaction->meeting_location ?? __('messages.student.transactions.undefined') }}</span>
+                                </div>
+                            @else
+                                <p class="text-sm text-indigo-400 italic">{{ __('messages.student.transactions.meeting_not_specified') }}</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
 

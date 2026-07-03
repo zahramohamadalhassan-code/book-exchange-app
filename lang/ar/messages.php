@@ -269,6 +269,13 @@ return [
             'submit_rating' => 'إرسال التقييم',
             'already_rated' => 'تم التقييم ✓',
             'no_transactions' => 'لا توجد عمليات تبادل حالياً',
+            'details' => 'تفاصيل الطلب',
+            'meeting_details' => 'تفاصيل اللقاء',
+            'offer_type' => 'نوع العرض',
+            'price' => 'السعر',
+            'payment_method' => 'طريقة الدفع',
+            'payment_not_specified' => 'غير محدد',
+            'meeting_not_specified' => 'لم يتم تحديد موعد أو مكان لقاء بعد',
         ],
 
         'favorites' => [

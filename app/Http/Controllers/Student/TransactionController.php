@@ -60,8 +60,14 @@ class TransactionController extends Controller
     // تستخدم عندما يضغط الطالب على زر "طلب الكتاب" في واجهة الموقع
     public function store(Request $request)
     {
-        $request->validate(['book_id' => 'required|exists:books,id']);
-        $book = Book::findOrFail($request->book_id);
+        $validated = $request->validate([
+            'book_id' => 'required|exists:books,id',
+            'offered_book_id' => 'nullable|exists:books,id',
+            'meeting_date' => 'nullable|date',
+            'meeting_time' => 'nullable',
+            'meeting_location' => 'nullable|string',
+        ]);
+        $book = Book::findOrFail($validated['book_id']);
 
 
 
@@ -82,9 +88,12 @@ class TransactionController extends Controller
 
         Transaction::create([
             'book_id' => $book->id,
-            'offered_book_id' => $request->offered_book_id,
+            'offered_book_id' => $validated['offered_book_id'] ?? null,
             'requester_id' => Auth::id(),
             'owner_id' => $book->user_id,
+            'meeting_date' => $validated['meeting_date'] ?? null,
+            'meeting_time' => $validated['meeting_time'] ?? null,
+            'meeting_location' => $validated['meeting_location'] ?? null,
             'status' => 'pending'
         ]);
 

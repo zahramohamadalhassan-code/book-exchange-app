@@ -269,6 +269,13 @@ return [
             'submit_rating' => 'Submit Rating',
             'already_rated' => 'Rated ✓',
             'no_transactions' => 'No exchange transactions yet',
+            'details' => 'Request Details',
+            'meeting_details' => 'Meeting Details',
+            'offer_type' => 'Offer Type',
+            'price' => 'Price',
+            'payment_method' => 'Payment Method',
+            'payment_not_specified' => 'Not specified',
+            'meeting_not_specified' => 'No meeting date or location set yet',
         ],
 
         'favorites' => [
