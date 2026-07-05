@@ -9,30 +9,29 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $departments = [
-            'هندسة معلوماتية',
-            'هندسة اتصالات',
-            'هندسة مدنية',
-            'هندسة معمارية والتخطيطي المعماري',
-            'العلوم الادارية والمالية',
-            'طب الاسنان',
-            'الصيدلة',
+        $categories = [
+            ['faculty' => 'كلية الهندسة', 'department' => 'معلوماتية'],
+            ['faculty' => 'كلية الهندسة', 'department' => 'اتصالات'],
+            ['faculty' => 'كلية الهندسة', 'department' => 'مدنية'],
+            ['faculty' => 'كلية الهندسة', 'department' => 'معمارية'],
+            ['faculty' => 'كلية العلوم الإدارية والمالية', 'department' => 'علوم إدارية'],
+            ['faculty' => 'كلية طب الأسنان', 'department' => 'طب أسنان'],
+            ['faculty' => 'كلية الصيدلة', 'department' => 'صيدلة'],
         ];
 
         $studyYears = ['السنة الأولى', 'السنة الثانية', 'السنة الثالثة', 'السنة الرابعة', 'السنة الخامسة'];
 
-        foreach ($departments as $department) {
+        foreach ($categories as $cat) {
             foreach ($studyYears as $year) {
                 // استثناء السنة الخامسة لكلية العلوم الإدارية والمالية
-                if ($department === 'العلوم الادارية والمالية' && $year === 'السنة الخامسة') {
+                if ($cat['faculty'] === 'كلية العلوم الإدارية والمالية' && $year === 'السنة الخامسة') {
                     continue;
                 }
 
-                // للتبسيط سنعتبر اسم الكلية والقسم هو نفسه بناءً على طلب المستخدم
                 Category::create([
-                    'university_name' => 'الجامعة',
-                    'faculty_name' => $department,
-                    'department_name' => 'عام',
+                    'university_name' => 'الجامعة الوطنية الخاصة',
+                    'faculty_name' => $cat['faculty'],
+                    'department_name' => $cat['department'],
                     'study_year' => $year,
                 ]);
             }

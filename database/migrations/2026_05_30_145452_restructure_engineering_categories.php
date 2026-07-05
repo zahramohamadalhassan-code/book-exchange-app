@@ -19,29 +19,35 @@ return new class extends Migration
             ->pluck('id')->toArray();
 
         $infoIdMap = [];
-        foreach ($years as $i => $year) {
-            $newId = DB::table('categories')->insertGetId([
-                'university_name' => $uni,
-                'faculty_name' => 'كلية الهندسة',
-                'department_name' => 'معلوماتية',
-                'study_year' => $year,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $infoIdMap[$oldInfoIds[$i]] = $newId;
+        if (!empty($oldInfoIds)) {
+            foreach ($years as $i => $year) {
+                if (!isset($oldInfoIds[$i])) continue;
+                $newId = DB::table('categories')->insertGetId([
+                    'university_name' => $uni,
+                    'faculty_name' => 'كلية الهندسة',
+                    'department_name' => 'معلوماتية',
+                    'study_year' => $year,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $infoIdMap[$oldInfoIds[$i]] = $newId;
+            }
         }
 
         $telecomIdMap = [];
-        foreach ($years as $i => $year) {
-            $newId = DB::table('categories')->insertGetId([
-                'university_name' => $uni,
-                'faculty_name' => 'كلية الهندسة',
-                'department_name' => 'اتصالات',
-                'study_year' => $year,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $telecomIdMap[$oldTelecomIds[$i]] = $newId;
+        if (!empty($oldTelecomIds)) {
+            foreach ($years as $i => $year) {
+                if (!isset($oldTelecomIds[$i])) continue;
+                $newId = DB::table('categories')->insertGetId([
+                    'university_name' => $uni,
+                    'faculty_name' => 'كلية الهندسة',
+                    'department_name' => 'اتصالات',
+                    'study_year' => $year,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $telecomIdMap[$oldTelecomIds[$i]] = $newId;
+            }
         }
 
         foreach ($infoIdMap as $oldId => $newId) {

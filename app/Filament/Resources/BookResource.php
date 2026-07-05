@@ -100,10 +100,11 @@ class BookResource extends Resource
                                 'rejected' => __('admin.book.moderation_statuses.rejected'),
                             ])
                             ->required(),
-                        Forms\Components\TextInput::make('cover_image_url')
+                        Forms\Components\FileUpload::make('cover_image_url')
                             ->label(__('admin.book.cover_image_url'))
-                            ->url()
-                            ->maxLength(500),
+                            ->image()
+                            ->directory('book_covers')
+                            ->columnSpanFull(),
                     ])->columns(2),
             ]);
     }
